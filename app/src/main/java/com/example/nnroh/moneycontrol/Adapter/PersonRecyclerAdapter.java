@@ -2,6 +2,7 @@ package com.example.nnroh.moneycontrol.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -29,7 +30,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<PersonRecyclerAd
     private Context mContext;
     private final LayoutInflater mLayoutInflater;
     private final List<Person> mPersonList;
-    ColorGenerator mGenerator = ColorGenerator.MATERIAL;
+    private ColorGenerator mGenerator = ColorGenerator.MATERIAL;
 
     public PersonRecyclerAdapter(Context context, List<Person> person) {
         mContext = context;
@@ -66,7 +67,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<PersonRecyclerAd
         return mPersonList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+     public class ViewHolder extends RecyclerView.ViewHolder{
 
         public final ImageView mPersonImage;
         public final TextView mPersonName;
@@ -82,7 +83,10 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<PersonRecyclerAd
                 @Override
                 public void onClick(View v) {
                     BottomSheetDialog dialog = new BottomSheetDialog();
+                    Bundle bundle = new Bundle();
+                    bundle.putString(MainActivity.PERSON_NUMBER, mCurrentPersonNumber);
                     dialog.show(((AppCompatActivity)mContext).getSupportFragmentManager(), dialog.getTag());
+                    dialog.setArguments(bundle);
 //                    Intent intent = new Intent(mContext, PersonDetailsActivity.class);
 //                    intent.putExtra(MainActivity.PERSON_NUMBER, mCurrentPersonNumber);
 //                    mContext.startActivity(intent);
