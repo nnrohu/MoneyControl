@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.support.design.widget.NavigationView;
@@ -39,7 +40,7 @@ public class MainActivity extends AppCompatActivity
     private RecyclerView mRecyclerView;
     private GridLayoutManager mGridLayoutManagerForPerson;
     private DataManager dm;
-    private GridLayoutManager mGridLayoutManagerForDebt;
+    private LinearLayoutManager mLayoutManagerForDebt;
     private DebtorRecyclerAdapter mDebtorRecyclerAdapterToMe;
 
     @Override
@@ -97,7 +98,7 @@ public class MainActivity extends AppCompatActivity
         mPersonRecyclerAdapter = new PersonRecyclerAdapter(this, mPersonList);
 
         //debtor adapter
-        mGridLayoutManagerForDebt = new GridLayoutManager(this, 2);
+        mLayoutManagerForDebt = new LinearLayoutManager(this);
         // debtor type by me
         mDebtListMe = dm.getAllPersonDebtsByType(Debt.DEBT_TYPE_IOWE);
         mDebtorRecyclerAdapterByMe = new DebtorRecyclerAdapter(this, mDebtListMe);
@@ -119,13 +120,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void displayDebtToMe(){
-        mRecyclerView.setLayoutManager(mGridLayoutManagerForDebt);
+        mRecyclerView.setLayoutManager(mLayoutManagerForDebt);
         mRecyclerView.setAdapter(mDebtorRecyclerAdapterToMe);
         selectNavigationMenuItem(R.id.nav_owed_to_me);
     }
 
     private void displayDebtByMe(){
-        mRecyclerView.setLayoutManager(mGridLayoutManagerForDebt);
+        mRecyclerView.setLayoutManager(mLayoutManagerForDebt);
         mRecyclerView.setAdapter(mDebtorRecyclerAdapterByMe);
         selectNavigationMenuItem(R.id.nav_owed_by_me);
     }

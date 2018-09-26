@@ -1,7 +1,10 @@
 package com.example.nnroh.moneycontrol.Adapter;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,6 +23,8 @@ import com.example.nnroh.moneycontrol.Data.PersonDebt;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 
 public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAdapter.ViewHolder>{
@@ -45,7 +50,7 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         PersonDebt debt = mDebtList.get(position);
-
+        holder.mCurrentPerson = debt;
 
         if (debt.getPerson().getImageUri() != null){
             Glide.with(mContext).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
@@ -64,13 +69,13 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
         if (Calendar.getInstance().getTimeInMillis() > dueDate) {
             holder.mDebtorDueDate.setTextColor(Color.RED);
         }
-            holder.mDebtorDueDate.setText("Due Date : " + getDueDate(dueDate));
+            holder.mDebtorDueDate.setText("Due Date : " + getDate(dueDate));
 
     }
 
-    private String getDueDate(long dueDate) {
+    private String getDate(long date) {
         SimpleDateFormat df = new SimpleDateFormat("EEEE,dd MMM,yyyy");
-        String formattedDate = df.format(dueDate);
+        String formattedDate = df.format(date);
         return formattedDate;
     }
 
@@ -85,6 +90,8 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
         public final ImageView mDebtorImage;
         public final TextView mDebtorName, mDebtorAmount, mDebtorNote, mDebtorDueDate;
 
+        PersonDebt mCurrentPerson;
+
         public ViewHolder(View itemView) {
             super(itemView);
 
@@ -93,6 +100,55 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
             mDebtorAmount = (TextView) itemView.findViewById(R.id.tv_debtor_amount);
             mDebtorNote = (TextView) itemView.findViewById(R.id.tv_debtor_note);
             mDebtorDueDate = (TextView) itemView.findViewById(R.id.tv_debtor_due_date);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   showDetailsDialog();
+                }
+            });
+        }
+
+        private void showDetailsDialog() {
+            final Dialog dialog = new Dialog(mContext);
+            dialog.setContentView(R.layout.debt_details_by_type);
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            dialog.show();
+
+            ImageView profileImage = (ImageView) dialog.findViewById(R.id.profile_image);
+            ImageView closeDialog = (ImageView) dialog.findViewById(R.id.iv_close_dialog);
+            closeDialog.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.dismiss();
+                }
+            });
+            TextView name = (TextView) dialog.findViewById(R.id.tv_debt_name);
+            TextView note = (TextView) dialog.findViewById(R.id.tv_debt_note);
+            TextView dueDate = (TextView) dialog.findViewById(R.id.tv_debt_due_date);
+            TextView createDate = (TextView) dialog.findViewById(R.id.tv_debt_created_date);
+
+            if (mCurrentPerson.getPerson().getImageUri() != null){
+                Glide.with(mContext).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
+                        .load(mCurrentPerson.getPerson().getImageUri()).into(profileImage);
+            }
+            else {
+                String letter = String.valueOf(mCurrentPerson.getPerson().getFullname().charAt(0));
+                TextDrawable drawable = TextDrawable.builder().buildRound(letter,mGenerator.getRandomColor());
+                profileImage.setImageDrawable(drawable);
+            }
+
+            name.setText(mCurrentPerson.getPerson().getFullname());
+            note.setText(mCurrentPerson.getDebt().getNote());
+            long dueDateLong = mCurrentPerson.getDebt().getDueDate();
+            if (Calendar.getInstance().getTimeInMillis() > dueDateLong) {
+                dueDate.setTextColor(Color.RED);
+            }
+            dueDate.setText("Due Date : " + getDate(dueDateLong));
+
+            long createDateLong = mCurrentPerson.getDebt().getCreatedDate();
+            createDate.setText("Create Date: " + getDate(createDateLong));
+
         }
     }
 }
