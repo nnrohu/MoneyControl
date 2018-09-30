@@ -19,19 +19,16 @@ public class Payment implements Parcelable {
 
     private String mNote;
 
-    private int mAction;
-
     private String mPersonPhoneNo;
 
     private Debt mDebt;
 
-    public Payment(String id, double amount, String debtId, long dateEntered, String note, int action, String personPhoneNo) {
+    public Payment(String id, double amount, String debtId, long dateEntered, String note, String personPhoneNo) {
         mId = id;
         mAmount = amount;
         mDebtId = debtId;
         mDateEntered = dateEntered;
         mNote = note;
-        mAction = action;
         mPersonPhoneNo = personPhoneNo;
     }
 
@@ -75,14 +72,6 @@ public class Payment implements Parcelable {
         mNote = note;
     }
 
-    public int getAction() {
-        return mAction;
-    }
-
-    public void setAction(int action) {
-        mAction = action;
-    }
-
     public String getPersonPhoneNo() {
         return mPersonPhoneNo;
     }
@@ -100,7 +89,6 @@ public class Payment implements Parcelable {
         private String mDebtId;
         private long mDateEntered;
         private String mNote;
-        private int mAction;
         private String mPersonPhoneNumber;
 
         public Builder id(String id) {
@@ -128,10 +116,6 @@ public class Payment implements Parcelable {
             return this;
         }
 
-        public Builder action(int action) {
-            mAction = action;
-            return this;
-        }
 
         public Builder personPhoneNumber(String personPhoneNumber) {
             mPersonPhoneNumber = personPhoneNumber;
@@ -147,7 +131,6 @@ public class Payment implements Parcelable {
 
         mId = builder.mId;
         mAmount = builder.mAmount;
-        mAction = builder.mAction;
         mNote = builder.mNote;
         mDateEntered = builder.mDateEntered;
         mDebtId = builder.mDebtId;
@@ -165,7 +148,6 @@ public class Payment implements Parcelable {
         dest.writeString(this.mDebtId);
         dest.writeLong(this.mDateEntered);
         dest.writeString(this.mNote);
-        dest.writeInt(this.mAction);
         dest.writeDouble(this.mAmount);
         dest.writeString(this.mPersonPhoneNo);
     }
@@ -175,7 +157,6 @@ public class Payment implements Parcelable {
         this.mDebtId = in.readString();
         this.mDateEntered = in.readLong();
         this.mNote = in.readString();
-        this.mAction = in.readInt();
         this.mAmount = in.readDouble();
         this.mPersonPhoneNo = in.readString();
     }
@@ -209,9 +190,6 @@ public class Payment implements Parcelable {
         if (mDateEntered != payment.mDateEntered) {
             return false;
         }
-        if (mAction != payment.mAction) {
-            return false;
-        }
         if (!mId.equals(payment.mId)) {
             return false;
         }
@@ -235,7 +213,6 @@ public class Payment implements Parcelable {
         result = 31 * result + mDebtId.hashCode();
         result = 31 * result + (int) (mDateEntered ^ (mDateEntered >>> 32));
         result = 31 * result + mNote.hashCode();
-        result = 31 * result + mAction;
         result = 31 * result + mPersonPhoneNo.hashCode();
         return result;
     }

@@ -7,15 +7,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.AppBarLayout;
-import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialogFragment;
-import android.support.design.widget.CoordinatorLayout;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.ActionBarOverlayLayout;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,18 +22,24 @@ import android.widget.ImageView;
 
 import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
-import com.bumptech.glide.Glide;
+import com.example.nnroh.moneycontrol.Adapter.PersonDebtDetailsAdapter;
 import com.example.nnroh.moneycontrol.App.MainActivity;
+import com.example.nnroh.moneycontrol.Data.Debt;
 import com.example.nnroh.moneycontrol.Data.Person;
 import com.example.nnroh.moneycontrol.Data.local.DataManager;
 
-public class BottomSheetDialog extends BottomSheetDialogFragment {
+import java.util.List;
+
+public class PersonDetails extends BottomSheetDialogFragment {
 
     private String mPersonName;
     ColorGenerator mGenerator = ColorGenerator.MATERIAL;
     private ImageView mPersonImage;
     private Person mPerson;
+    private List<Debt> mDebt;
     private String mPhoneNumber;
+    private PersonDebtDetailsAdapter mAdapter;
+    private DataManager dm;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,8 +50,9 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
         if (!bundle.isEmpty()) {
             mPhoneNumber = bundle.getString(MainActivity.PERSON_NUMBER);
         }
-        DataManager dm = new DataManager(getContext());
+        dm = new DataManager(getContext());
         mPerson = dm.getPerson(mPhoneNumber);
+        mDebt = dm.getPersonDebts(mPhoneNumber);
         mPersonName = mPerson.getFullname();
 
     }
@@ -60,7 +62,7 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     @Override
     public void setupDialog(Dialog dialog, int style) {
         super.setupDialog(dialog, style);
-        View v = View.inflate(getActivity(), R.layout.bottomsheet, null);
+        View v = View.inflate(getActivity(), R.layout.person_details, null);
         dialog.setContentView(v);
         v.setFitsSystemWindows(true);
 
@@ -76,8 +78,15 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
 
         mPersonImage = (ImageView) v.findViewById(R.id.iv_person);
         setImage();
+        RecyclerView personDebt = (RecyclerView) v.findViewById(R.id.item_person_debt_list);
+        mAdapter = new PersonDebtDetailsAdapter(getContext(), mDebt);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
+        personDebt.setLayoutManager(layoutManager);
+        personDebt.setAdapter(mAdapter);
 
     }
+
+
 
     private void setImage() {
         if (mPerson.getImageUri() != null){
@@ -100,7 +109,6 @@ public class BottomSheetDialog extends BottomSheetDialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
         // request a window without the title
-        dialog.getWindow().requestFeature(Window.FEATURE_NO_TITLE);
         return dialog;
     }
 }

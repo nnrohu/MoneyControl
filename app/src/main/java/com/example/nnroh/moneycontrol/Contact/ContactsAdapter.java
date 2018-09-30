@@ -52,7 +52,7 @@ public class ContactsAdapter extends ArrayAdapter implements Filterable{
 
         //        Create a new TextDrawable for our image's background
         TextDrawable drawable = TextDrawable.builder()
-                .buildRound(letter, mGenerator.getRandomColor());
+                .buildRound(letter.toUpperCase(), mGenerator.getRandomColor());
 
 
         String imageUri = contact.photo;

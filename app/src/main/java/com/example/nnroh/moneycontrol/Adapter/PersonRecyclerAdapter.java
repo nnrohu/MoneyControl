@@ -1,7 +1,6 @@
 package com.example.nnroh.moneycontrol.Adapter;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -17,8 +16,7 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.nnroh.moneycontrol.App.MainActivity;
-import com.example.nnroh.moneycontrol.App.PersonDetailsActivity;
-import com.example.nnroh.moneycontrol.BottomSheetDialog;
+import com.example.nnroh.moneycontrol.PersonDetails;
 import com.example.nnroh.moneycontrol.R;
 import com.example.nnroh.moneycontrol.Data.Person;
 
@@ -53,7 +51,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<PersonRecyclerAd
         }
         else {
             String letter = String.valueOf(mPersonList.get(position).getFullname().charAt(0));
-            TextDrawable drawable = TextDrawable.builder().buildRound(letter,mGenerator.getRandomColor());
+            TextDrawable drawable = TextDrawable.builder().buildRound(letter.toUpperCase(),mGenerator.getRandomColor());
             holder.mPersonImage.setImageDrawable(drawable);
         }
         holder.mPersonName.setText(mPersonList.get(position).getFullname());
@@ -82,7 +80,7 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<PersonRecyclerAd
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    BottomSheetDialog dialog = new BottomSheetDialog();
+                    PersonDetails dialog = new PersonDetails();
                     Bundle bundle = new Bundle();
                     bundle.putString(MainActivity.PERSON_NUMBER, mCurrentPersonNumber);
                     dialog.show(((AppCompatActivity)mContext).getSupportFragmentManager(), dialog.getTag());

@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".App.MainActivity"
+    android:background="@color/cardview_shadow_end_color"
     tools:showIn="@layout/app_bar_main">
 
     <android.support.v7.widget.RecyclerView
@@ -16,6 +17,7 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="4dp"
         android:layout_marginTop="8dp"
+        android:background="@color/cardview_shadow_end_color"
         android:scrollbars="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

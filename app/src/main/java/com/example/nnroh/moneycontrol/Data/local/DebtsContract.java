@@ -82,7 +82,6 @@ public final class DebtsContract {
         public static String[] getAllColumns() {
             return new String[] {
                     COLUMN_AMOUNT,
-                    COLUMN_ACTION,
                     COLUMN_DEBT_ID,
                     COLUMN_DATE_ENTERED,
                     COLUMN_ENTRY_ID,

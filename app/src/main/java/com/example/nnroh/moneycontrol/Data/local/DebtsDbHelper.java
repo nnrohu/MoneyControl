@@ -19,7 +19,7 @@ import java.util.List;
  */
 public class DebtsDbHelper extends SQLiteOpenHelper{
 
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 1;
 
     private static final String DATABASE_NAME = "Debts.db";
 
@@ -37,24 +37,6 @@ public class DebtsDbHelper extends SQLiteOpenHelper{
 
     static final String WHERE = " WHERE ";
     static final String WHERE_EQUAL_TO = " = ? ";
-
-    public List<Person> getAllPerson() {
-        List<Person> personList = new ArrayList<Person>();
-        String query = "SELECT * FROM " + PersonsEntry.TABLE_NAME;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(query, null);
-
-        while (cursor.moveToNext()){
-            Person person = new Person();
-            int imageIndex = cursor.getColumnIndex(PersonsEntry.COLUMN_IMAGE_URI);
-            int nameIndex = cursor.getColumnIndex(PersonsEntry.COLUMN_NAME);
-            person.setImageUri(cursor.getString(imageIndex));
-            person.setFullname(cursor.getString(nameIndex));
-            personList.add(person);
-
-        }
-        return personList;
-    }
 
 
     private static final String SQL_CREATE_DEBTS_TABLE =
@@ -85,7 +67,6 @@ public class DebtsDbHelper extends SQLiteOpenHelper{
                     PaymentsEntry._ID + INTEGER_TYPE + " PRIMARY KEY AUTOINCREMENT" + COMMA_SEP +
                     PaymentsEntry.COLUMN_AMOUNT + TEXT_TYPE + NOT_NULL + COMMA_SEP +
                     PaymentsEntry.COLUMN_ENTRY_ID + TEXT_TYPE + UNIQUE + NOT_NULL + COMMA_SEP +
-                    PaymentsEntry.COLUMN_ACTION + INTEGER_TYPE + COMMA_SEP +
                     PaymentsEntry.COLUMN_DATE_ENTERED + TEXT_TYPE + COMMA_SEP +
                     PaymentsEntry.COLUMN_PERSON_PHONE_NUMBER + TEXT_TYPE + COMMA_SEP +
                     PaymentsEntry.COLUMN_NOTE + TEXT_TYPE + COMMA_SEP +

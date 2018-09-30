@@ -28,7 +28,6 @@ public class DataManager {
 
     public List<PersonDebt> getAllPersonDebtsByType(int debtType) {
 
-
         List<PersonDebt> personDebts = new ArrayList<>();
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
@@ -105,7 +104,6 @@ public class DataManager {
 
             String paymentId = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_ENTRY_ID));
             String paymentDebtId = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_DEBT_ID));
-            int action = cursor.getInt(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_ACTION));
             String personPhoneNumber = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.ALIAS_PERSON_PHONE_NUMBER));
             double paymentAmount = cursor.getDouble(cursor.getColumnIndexOrThrow(PaymentsEntry.ALIAS_AMOUNT));
             long paymentDateEntered = cursor.getLong(cursor.getColumnIndexOrThrow(PaymentsEntry.ALIAS_DATE_ENTERED));
@@ -118,7 +116,7 @@ public class DataManager {
                     .dateEntered(paymentDateEntered)
                     .note(paymentNote)
                     .personPhoneNumber(personPhoneNumber)
-                    .action(action).build();
+                    .build();
 
             long dateDue = cursor.getLong(cursor.getColumnIndexOrThrow(DebtsEntry.COLUMN_DATE_DUE));
             int status = cursor.getInt(cursor.getColumnIndexOrThrow(DebtsEntry.COLUMN_STATUS));
@@ -143,7 +141,6 @@ public class DataManager {
 
                 String paymentId2 = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_ENTRY_ID));
                 String paymentDebtId2 = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_DEBT_ID));
-                int action2 = cursor.getInt(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_ACTION));
                 String personPhoneNumber2 = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.ALIAS_PERSON_PHONE_NUMBER));
                 double paymentAmount2 = cursor.getDouble(cursor.getColumnIndexOrThrow(PaymentsEntry.ALIAS_AMOUNT));
                 long paymentDateEntered2 = cursor.getLong(cursor.getColumnIndexOrThrow(PaymentsEntry.ALIAS_DATE_ENTERED));
@@ -156,7 +153,7 @@ public class DataManager {
                         .dateEntered(paymentDateEntered2)
                         .note(paymentNote2)
                         .personPhoneNumber(personPhoneNumber2)
-                        .action(action2).build();
+                        .build();
 
                 debt.addPayment(payment2);
             }
@@ -286,7 +283,6 @@ public class DataManager {
                 .append(comma).append(DebtsEntry.COLUMN_TYPE).append(comma).append(PersonsEntry.COLUMN_NAME).append(comma)
                 .append(PersonsEntry.COLUMN_IMAGE_URI).append(comma)
                 .append(PersonsEntry.COLUMN_PHONE_NO).append(comma)
-                .append(PaymentsEntry.TABLE_NAME).append(dot).append(PaymentsEntry.COLUMN_ACTION).append(comma)
                 .append(PaymentsEntry.TABLE_NAME).append(dot).append(PaymentsEntry.COLUMN_AMOUNT)
                 .append(alias).append(PaymentsEntry.ALIAS_AMOUNT).append(comma)
                 .append(PaymentsEntry.TABLE_NAME).append(dot).append(PaymentsEntry.COLUMN_DATE_ENTERED).append(alias)
@@ -343,16 +339,16 @@ public class DataManager {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues paymentValues = getContentValuesFromPayment(payment);
         db.insert(PaymentsEntry.TABLE_NAME, null, paymentValues);
-
-        // perform debt amount update based on action
-        if (payment.getAction() == Payment.PAYMENT_ACTION_DEBT_DECREASE) {
-            double newAmount = getDebt(payment.getDebtId()).getAmount() - payment.getAmount();
-            updateDebtAmount(payment.getDebtId(), newAmount);
-        } else if (payment.getAction() == Payment.PAYMENT_ACTION_DEBT_INCREASE) {
-            Debt debt = getDebt(payment.getDebtId());
-            double newAmount = debt.getAmount() + payment.getAmount();
-            updateDebtAmount(payment.getDebtId(), newAmount);
-        }
+        Debt debt = getDebt(payment.getDebtId());
+        double newAmount = debt.getAmount() - payment.getAmount();
+        updateDebtAmount(payment.getDebtId(), newAmount);
+//        // perform debt amount update based on action
+//        if (payment.getAction() == Payment.PAYMENT_ACTION_DEBT_DECREASE) {
+//            double newAmount = getDebt(payment.getDebtId()).getAmount() - payment.getAmount();
+//            updateDebtAmount(payment.getDebtId(), newAmount);
+//        } else if (payment.getAction() == Payment.PAYMENT_ACTION_DEBT_INCREASE) {
+//
+//        }
     }
 
 
@@ -371,15 +367,10 @@ public class DataManager {
         double initialPaymentAmount = initialPayment.getAmount();
         double initialDebtAmount = getDebt(payment.getDebtId()).getAmount();
 
-        if (initialPayment.getAction() == Payment.PAYMENT_ACTION_DEBT_DECREASE) {
             double debtAmount = initialPaymentAmount + initialDebtAmount;
             double newDebtAmount = debtAmount - payment.getAmount();
             updateDebtAmount(payment.getDebtId(), newDebtAmount);
-        }else if (initialPayment.getAction() == Payment.PAYMENT_ACTION_DEBT_INCREASE) {
-            double debtAmount = initialDebtAmount - initialPaymentAmount;
-            double newDebtAmount = debtAmount + payment.getAmount();
-            updateDebtAmount(payment.getDebtId(), newDebtAmount);
-        }
+
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues paymentValues = getContentValuesFromPayment(payment);
@@ -430,13 +421,10 @@ public class DataManager {
     }
 
     private void updateDebtAmountBasedOnPaymentAction(Payment payment) {
-        if (payment.getAction() == Payment.PAYMENT_ACTION_DEBT_DECREASE) {
+
             double newDebtAmount = getDebt(payment.getDebtId()).getAmount() + payment.getAmount();
             updateDebtAmount(payment.getDebtId(), newDebtAmount);
-        } else if (payment.getAction() == Payment.PAYMENT_ACTION_DEBT_INCREASE) {
-            double newDebtAmount = getDebt(payment.getDebtId()).getAmount() -  payment.getAmount();
-            updateDebtAmount(payment.getDebtId(), newDebtAmount);
-        }
+
     }
 
 
@@ -452,7 +440,6 @@ public class DataManager {
             cursor.moveToFirst();
 
             String paymentDebtId = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_DEBT_ID));
-            int action = cursor.getInt(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_ACTION));
             String personPhoneNumber = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_PERSON_PHONE_NUMBER));
             double paymentAmount = cursor.getDouble(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_AMOUNT));
             long paymentDateEntered = cursor.getLong(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_DATE_ENTERED));
@@ -465,7 +452,7 @@ public class DataManager {
                     .dateEntered(paymentDateEntered)
                     .note(paymentNote)
                     .personPhoneNumber(personPhoneNumber)
-                    .action(action).build();
+                    .build();
         }
 
         if (cursor != null) {
@@ -478,7 +465,6 @@ public class DataManager {
     private ContentValues getContentValuesFromPayment( Payment payment) {
         ContentValues paymentValues = new ContentValues();
         paymentValues.put(PaymentsEntry.COLUMN_ENTRY_ID, payment.getId());
-        paymentValues.put(PaymentsEntry.COLUMN_ACTION, payment.getAction());
         paymentValues.put(PaymentsEntry.COLUMN_AMOUNT, payment.getAmount());
         paymentValues.put(PaymentsEntry.COLUMN_DATE_ENTERED, payment.getDateEntered());
         paymentValues.put(PaymentsEntry.COLUMN_DEBT_ID, payment.getDebtId());
@@ -502,13 +488,11 @@ public class DataManager {
 
                 String id = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_ENTRY_ID));
                 double amount = cursor.getDouble(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_AMOUNT));
-                int action = cursor.getInt(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_ACTION));
                 long dateEntered = cursor.getLong(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_DATE_ENTERED));
                 String note = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_NOTE));
                 String phoneNumber = cursor.getString(cursor.getColumnIndexOrThrow(PaymentsEntry.COLUMN_PERSON_PHONE_NUMBER));
 
                 Payment payment = new Payment.Builder()
-                        .action(action)
                         .dateEntered(dateEntered)
                         .amount(amount)
                         .debtId(debtId)
@@ -621,7 +605,8 @@ public class DataManager {
         SQLiteDatabase db = mDbHelper.getReadableDatabase();
         List<Debt> debts = new ArrayList<>();
         Cursor cursor = db.query(DebtsEntry.TABLE_NAME, DebtsEntry.getAllColumns(),
-                DebtsEntry.COLUMN_PERSON_PHONE_NUMBER + DebtsDbHelper.WHERE_EQUAL_TO, new String[]{personPhoneNumber}, null, null, null);
+                DebtsEntry.COLUMN_PERSON_PHONE_NUMBER
+                        + DebtsDbHelper.WHERE_EQUAL_TO, new String[]{personPhoneNumber}, null, null, null);
 
         if (cursor != null && cursor.getCount() > 0) {
 

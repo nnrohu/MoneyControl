@@ -45,7 +45,7 @@ public class PersonDetailsActivity extends AppCompatActivity {
             Glide.with(this).load(mPerson.getImageUri()).into(mPersonImage);
         }else {
             String letter = String.valueOf(mPerson.getFullname().charAt(0));
-            TextDrawable drawable = TextDrawable.builder().buildRound(letter, mGenerator.getRandomColor());
+            TextDrawable drawable = TextDrawable.builder().buildRound(letter.toUpperCase(), mGenerator.getRandomColor());
             mPersonImage.setImageDrawable(drawable);
         }
         CollapsingToolbarLayout layout = (CollapsingToolbarLayout) findViewById(R.id.toolbar_layout);

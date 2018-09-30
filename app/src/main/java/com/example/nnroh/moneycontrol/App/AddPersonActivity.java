@@ -2,6 +2,9 @@ package com.example.nnroh.moneycontrol.App;
 
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.ContactsContract;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -19,7 +22,6 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.nnroh.moneycontrol.Contact.ContactActivity;
 import com.example.nnroh.moneycontrol.Data.Debt;
 import com.example.nnroh.moneycontrol.Data.Person;
 import com.example.nnroh.moneycontrol.Data.local.DataManager;
@@ -47,7 +49,7 @@ public class AddPersonActivity extends AppCompatActivity {
     private EditText mComment;
     private Button mDateCreated;
     private Button mDateDue;
-    private String personPhoto;
+    private String mPersonPhoto;
     ColorGenerator mGenerator = ColorGenerator.MATERIAL;
     private TextDrawable mDrawable;
 
@@ -59,6 +61,7 @@ public class AddPersonActivity extends AppCompatActivity {
     private int mDebtType;
     private long mDateDueLong;
     private long mDateCreatedLong;
+    private String mPersonName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,7 +74,7 @@ public class AddPersonActivity extends AppCompatActivity {
         mibContact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(AddPersonActivity.this, ContactActivity.class);
+                Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
                 startActivityForResult(intent, REQUEST_CODE);
             }
         });
@@ -182,25 +185,77 @@ public class AddPersonActivity extends AppCompatActivity {
 
         if (requestCode == 1){
             if (resultCode == RESULT_OK){
-                String personName = data.getStringExtra(PERSON_NAME);
-                String personNumber = data.getStringExtra(PERSON_NUMBER);
-                personPhoto = data.getStringExtra(PERSON_PHOTO);
-
-                mFullName.setText(personName);
-                mNumber.setText(personNumber);
-
-                if (personPhoto != null) {
-                    Glide.with(this)
-                            .applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-                            .load(personPhoto).into(mPhoto);
-                }else {
-                    String letter = String.valueOf(personName.charAt(0));
-                    //        Create a new TextDrawable for our image's background
-                    mDrawable = TextDrawable.builder()
-                            .buildRound(letter, mGenerator.getRandomColor());
-                    mPhoto.setImageDrawable(mDrawable);
-                }
+                Uri mContactUri = data.getData();
+                retrieveContactName(mContactUri);
+                retrieveContactNumber(mContactUri);
+                retrieveContactPhoto(mContactUri);
+//                mPersonName = data.getStringExtra(PERSON_NAME);
+//                String personNumber = data.getStringExtra(PERSON_NUMBER);
+//                mPersonPhoto = data.getStringExtra(PERSON_PHOTO);
+//
+//                mFullName.setText(mPersonName);
+//                mNumber.setText(personNumber);
+//
+//                if (mPersonPhoto != null) {
+//                    Glide.with(this)
+//                            .applyDefaultRequestOptions(RequestOptions.circleCropTransform())
+//                            .load(mPersonPhoto).into(mPhoto);
+//                }else {
+//                    String letter = String.valueOf(mPersonName.charAt(0));
+//                    //        Create a new TextDrawable for our image's background
+//                    mDrawable = TextDrawable.builder()
+//                            .buildRound(letter.toUpperCase(), mGenerator.getRandomColor());
+//                    mPhoto.setImageDrawable(mDrawable);
+//                }
             }
+        }
+    }
+
+    private void retrieveContactNumber(Uri mContactUri) {
+
+        // Using the contact ID now we will get contact phone number
+        Cursor cursorPhone = getContentResolver().query(mContactUri, new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
+                null, null, null);
+
+        if (cursorPhone != null && cursorPhone.moveToFirst()) {
+            String contactNumber = cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            mNumber.setText(contactNumber);
+
+            cursorPhone.close();
+        }
+    }
+
+    private void retrieveContactName(Uri mContactUri) {
+
+        // querying contact data store
+        Cursor cursor = getContentResolver().query(mContactUri, null, null, null, null);
+        if (cursor != null && cursor.moveToFirst()) {
+            String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
+            mFullName.setText(contactName);
+
+            cursor.close();
+        }
+    }
+
+    public void retrieveContactPhoto(Uri mContactUri) {
+        Cursor cursor = getContentResolver().query(mContactUri, null, null, null, null);
+        if (cursor != null && cursor.getCount() > 0) {
+
+            if (cursor.moveToFirst()) {
+                mPersonPhoto = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
+
+                Glide.with(this)
+                        .applyDefaultRequestOptions(RequestOptions.circleCropTransform())
+                        .load(mPersonPhoto).into(mPhoto);
+            }
+
+            cursor.close();
+        }else {
+            String letter = String.valueOf(mPersonName.charAt(0));
+            //        Create a new TextDrawable for our image's background
+            mDrawable = TextDrawable.builder()
+                    .buildRound(letter.toUpperCase(), mGenerator.getRandomColor());
+            mPhoto.setImageDrawable(mDrawable);
         }
     }
 
@@ -226,7 +281,7 @@ public class AddPersonActivity extends AppCompatActivity {
 
     private void insertDebt() {
         //Person value
-        String photoString = personPhoto;
+        String photoString = mPersonPhoto;
         String nameString = mFullName.getText().toString().trim();
         String numberString = mNumber.getText().toString().trim();
 

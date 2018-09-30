@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,6 +20,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.nnroh.moneycontrol.R;
 import com.example.nnroh.moneycontrol.Data.PersonDebt;
+import com.example.nnroh.moneycontrol.ViewDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -85,7 +87,7 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
         return mDebtList.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         public final ImageView mDebtorImage;
         public final TextView mDebtorName, mDebtorAmount, mDebtorNote, mDebtorDueDate;
@@ -104,51 +106,11 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                   showDetailsDialog();
+                    ViewDialog dialog = new ViewDialog(mContext);
+                    dialog.showDialogForDebtor(mCurrentPerson);
                 }
             });
         }
 
-        private void showDetailsDialog() {
-            final Dialog dialog = new Dialog(mContext);
-            dialog.setContentView(R.layout.debt_details_by_type);
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            dialog.show();
-
-            ImageView profileImage = (ImageView) dialog.findViewById(R.id.profile_image);
-            ImageView closeDialog = (ImageView) dialog.findViewById(R.id.iv_close_dialog);
-            closeDialog.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    dialog.dismiss();
-                }
-            });
-            TextView name = (TextView) dialog.findViewById(R.id.tv_debt_name);
-            TextView note = (TextView) dialog.findViewById(R.id.tv_debt_note);
-            TextView dueDate = (TextView) dialog.findViewById(R.id.tv_debt_due_date);
-            TextView createDate = (TextView) dialog.findViewById(R.id.tv_debt_created_date);
-
-            if (mCurrentPerson.getPerson().getImageUri() != null){
-                Glide.with(mContext).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-                        .load(mCurrentPerson.getPerson().getImageUri()).into(profileImage);
-            }
-            else {
-                String letter = String.valueOf(mCurrentPerson.getPerson().getFullname().charAt(0));
-                TextDrawable drawable = TextDrawable.builder().buildRound(letter,mGenerator.getRandomColor());
-                profileImage.setImageDrawable(drawable);
-            }
-
-            name.setText(mCurrentPerson.getPerson().getFullname());
-            note.setText(mCurrentPerson.getDebt().getNote());
-            long dueDateLong = mCurrentPerson.getDebt().getDueDate();
-            if (Calendar.getInstance().getTimeInMillis() > dueDateLong) {
-                dueDate.setTextColor(Color.RED);
-            }
-            dueDate.setText("Due Date : " + getDate(dueDateLong));
-
-            long createDateLong = mCurrentPerson.getDebt().getCreatedDate();
-            createDate.setText("Create Date: " + getDate(createDateLong));
-
-        }
     }
 }

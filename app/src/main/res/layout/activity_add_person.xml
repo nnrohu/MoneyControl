@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_margin="16dp"
     tools:context=".App.AddPersonActivity">
 
     <ScrollView
@@ -158,12 +159,16 @@
                 android:id="@+id/btn_date_due"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:background="@drawable/payment_button"
                 tools:text="Date Due: Friday, March 29th 2017" />
 
             <Button
                 android:id="@+id/btn_date_created"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@android:color/white"
+                android:background="@drawable/payment_button"
                 tools:text="Created on: Friday, March 29th 2017" />
 
         </LinearLayout>
