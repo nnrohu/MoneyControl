@@ -667,7 +667,7 @@ public class DataManager {
     }
 
 
-    private boolean debtHasPayments(String debtId) {
+    public boolean debtHasPayments(String debtId) {
 
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -755,7 +755,7 @@ public class DataManager {
     }
 
 
-    private boolean personAlreadyExist(String phoneNumber) {
+    public boolean personAlreadyExist(String phoneNumber) {
 
         if (phoneNumber != null) {
             SQLiteDatabase db = mDbHelper.getWritableDatabase();

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:background="@color/cardview_shadow_end_color"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:background="@drawable/custom_toolbar"
+        android:text="@string/payments_title"
+        android:gravity="center_vertical"
+        android:paddingLeft="8dp"
+        android:textColor="@android:color/white"
+        android:textAppearance="@android:style/TextAppearance.Material.Large"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize" />
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/payment_details_for_debt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        tools:listitem="@layout/item_payment_details_of_debt" />
+</LinearLayout>

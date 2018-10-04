@@ -3,6 +3,10 @@
     package="com.example.nnroh.moneycontrol">
 
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
         android:allowBackup="true"
@@ -23,23 +27,29 @@
         </activity>
         <activity
             android:name=".App.AddPersonActivity"
-            android:label="@string/add_person" />
-        <activity
-            android:name=".Contact.ContactActivity"
-            android:label="@string/title_activity_contact"
-            android:theme="@style/AppTheme.NoActionBar">
-            <intent-filter>
-                <action android:name="android.intent.action.SEARCH" />
-            </intent-filter>
-
+            android:label="@string/add_person"
+            android:parentActivityName=".App.MainActivity">
             <meta-data
-                android:name="android.app.searchable"
-                android:resource="@xml/searchable" />
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".App.MainActivity" />
         </activity>
+
         <activity
             android:name=".App.PersonDetailsActivity"
             android:label="@string/title_activity_person_details"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:parentActivityName=".App.MainActivity"
+            android:theme="@style/AppTheme.NoActionBar">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".App.MainActivity" />
+        </activity>
+        <activity android:name=".App.PaymentActivity" />
+
+        <provider
+            android:name=".Data.Provider.MoneyProvider"
+            android:authorities="com.example.nnroh.debt.provider"
+            android:enabled="true"
+            android:exported="true" />
     </application>
 
 </manifest>
