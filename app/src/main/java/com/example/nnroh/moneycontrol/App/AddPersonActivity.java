@@ -29,7 +29,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
-import com.example.nnroh.moneycontrol.CountryToPhonePrefix;
+import com.example.nnroh.moneycontrol.Utils.CountryToPhonePrefix;
 import com.example.nnroh.moneycontrol.Data.Debt;
 import com.example.nnroh.moneycontrol.Data.local.DataManager;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.DebtsEntry;

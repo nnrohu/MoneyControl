@@ -81,8 +81,6 @@ public class LoginActivity extends AppCompatActivity {
     StepView stepView;
     AlertDialog dialog_verifying, profile_dialog;
     private TextView mPhonNumberView;
-    public static final String USER_NAME = "com.example.nnroh.moneycontrol.USER_NAME";
-    public static final String USER_PHONE_NO = "com.example.nnroh.moneycontrol.USER_PHONE_NO";
 
     private String userChoosenTask;
 
@@ -179,6 +177,11 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
 
                 final String profileName = mProfileName.getText().toString();
+                FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(user.getUid());
+                mUserDb.child("name").setValue(profileName);
+                mUserDb.child("image").setValue("");
+
                 if (TextUtils.isEmpty(profileName)) {
                     mProfileName.setError("This field is required.");
                 } else {
@@ -201,8 +204,6 @@ public class LoginActivity extends AppCompatActivity {
                         public void run() {
                             profile_dialog.dismiss();
                             Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.putExtra(USER_PHONE_NO, phoneNumber);
-                            intent.putExtra(USER_NAME, profileName);
                             startActivity(intent);
                             finish();
                         }
@@ -303,7 +304,7 @@ public class LoginActivity extends AppCompatActivity {
                                     public void onDataChange(DataSnapshot dataSnapshot) {
                                         if (!dataSnapshot.exists()){
                                             Map<String, Object>  userMap = new HashMap<>();
-                                            userMap.put("Phone", user.getPhoneNumber());
+                                            userMap.put("phone", user.getPhoneNumber());
                                             mUserDB.updateChildren(userMap);
                                         }
                                     }

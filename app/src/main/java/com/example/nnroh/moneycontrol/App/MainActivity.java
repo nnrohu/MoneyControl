@@ -2,14 +2,17 @@ package com.example.nnroh.moneycontrol.App;
 
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -17,6 +20,7 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -28,7 +32,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
@@ -49,13 +52,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.karan.churi.PermissionManager.PermissionManager;
 
-import java.util.HashMap;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
-        LoaderManager.LoaderCallbacks<Cursor>{
+        LoaderManager.LoaderCallbacks<Cursor> {
 
     public static final String PERSON_NUMBER = "com.example.nnroh.moneycontrol.PERSON_NUMBER";
     public static final String PERSON_NAME = "com.example.nnroh.moneycontrol.PERSON_NAME";
@@ -80,9 +83,12 @@ public class MainActivity extends AppCompatActivity
     private boolean mQueryLoadForPersonFinished;
 
     private FirebaseAuth mAuth;
-    private String mUserName;
-    private String mUserNumber;
-    private String mUserImage;
+    private ImageView mProfileImage;
+
+    public static final int REQUEST_CAMERA = 7;
+    public static final int REQUEST_GALLERY = 8;
+    private TextView mUserName;
+    private TextView mUserPhone;
 
     @Override
     protected void onResume() {
@@ -97,19 +103,44 @@ public class MainActivity extends AppCompatActivity
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null){
+        if (currentUser == null) {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
+        }else {
+            updateUI(currentUser);
         }
-//        updateUI(currentUser);
+    }
+
+    private void updateUI(final FirebaseUser currentUser) {
+        DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(currentUser.getUid());
+
+        mUserDb.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                String nameVal = (String) dataSnapshot.child("name").getValue();
+                String phoneVal = (String) dataSnapshot.child("phone").getValue();
+                mUserName.setText(nameVal);
+                mUserPhone.setText(phoneVal);
+                String imageVal = (String) dataSnapshot.child("image").getValue();
+                if (!imageVal.equals("")){
+                    Glide.with(MainActivity.this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
+                            .load(imageVal).into(mProfileImage);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar =  findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mAuth = FirebaseAuth.getInstance();
         enableStrictMode();
@@ -118,16 +149,11 @@ public class MainActivity extends AppCompatActivity
         mProgressDialog.setMessage("Loading...");
         mProgressDialog.setIndeterminate(true);
 
-        permission = new PermissionManager(){};
+        permission = new PermissionManager() {
+        };
         permission.checkAndRequestPermissions(this);
 
-        Intent intent = getIntent();
-        if (intent.getExtras() != null){
-            mUserName = intent.getStringExtra(LoginActivity.USER_NAME);
-            mUserNumber = intent.getStringExtra(LoginActivity.USER_PHONE_NO);
-        }
-
-        FloatingActionButton fab =  findViewById(R.id.fab_add_person);
+        FloatingActionButton fab = findViewById(R.id.fab_add_person);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -136,45 +162,27 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
-        NavigationView navigationView =  findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         mTotalAmountToMe = (TextView) navigationView.getMenu().findItem(R.id.nav_owed_to_me).getActionView();
         mTotalAmountByMe = (TextView) navigationView.getMenu().findItem(R.id.nav_owed_by_me).getActionView();
         View headerView = navigationView.getHeaderView(0);
-        ImageView userImage = headerView.findViewById(R.id.iv_user_image);
-        TextView userName = headerView.findViewById(R.id.tv_user_name);
-        TextView userPhone = headerView.findViewById(R.id.tv_user_phone);
+        mProfileImage = headerView.findViewById(R.id.iv_user_image);
+        mUserName = headerView.findViewById(R.id.tv_user_name);
+        mUserPhone = headerView.findViewById(R.id.tv_user_phone);
+        ImageView imageEdit = headerView.findViewById(R.id.iv_profile_edit);
 
-        if (mUserName != null) {
-            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-            if (user != null){
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                final DatabaseReference mUserDB = database.getReference("user").child(user.getUid());
-                mUserDB.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (!dataSnapshot.exists()){
-                            Map<String, Object> userMap = new HashMap<>();
-                            userMap.put("Name", mUserName);
-                            mUserDB.updateChildren(userMap);
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
+        imageEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDialogOptionForImage();
             }
-
-            userName.setText(mUserName);
-        }
-        userPhone.setText(mUserNumber);
+        });
 
         navigationView.setNavigationItemSelectedListener(this);
         initializeDisplayContent();
@@ -183,8 +191,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void enableStrictMode() {
-        if (BuildConfig.DEBUG){
-            StrictMode.ThreadPolicy policy = new  StrictMode.ThreadPolicy.Builder()
+        if (BuildConfig.DEBUG) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
                     .detectAll().penaltyLog().build();
             StrictMode.setThreadPolicy(policy);
         }
@@ -192,7 +200,7 @@ public class MainActivity extends AppCompatActivity
 
 
     private void initializeDisplayContent() {
-        mRecyclerView =  findViewById(R.id.item_person_list);
+        mRecyclerView = findViewById(R.id.item_person_list);
         //person adapter
         mGridLayoutManagerForPerson = new GridLayoutManager(this, 4);
 
@@ -209,8 +217,6 @@ public class MainActivity extends AppCompatActivity
         displayPerson();
 
     }
-
-
 
 
     private void displayPerson() {
@@ -235,10 +241,102 @@ public class MainActivity extends AppCompatActivity
 
 
     private void selectNavigationMenuItem(int id) {
-        NavigationView navigationView =  findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.nav_view);
         Menu menu = navigationView.getMenu();
         menu.findItem(id).setChecked(true);
     }
+
+    private void showDialogOptionForImage() {
+        final CharSequence[] items = {"Take Photo", "Choose from Library",
+                "Cancel"};
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add Photo!");
+        builder.setItems(items, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+
+                if (items[item].equals("Take Photo")) {
+                    cameraIntent();
+
+                } else if (items[item].equals("Choose from Library")) {
+                    galleryIntent();
+
+                } else if (items[item].equals("Cancel")) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.show();
+    }
+
+    private void galleryIntent() {
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);//
+        startActivityForResult(Intent.createChooser(intent, "Select File"), REQUEST_GALLERY);
+    }
+
+    private void cameraIntent() {
+        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(intent, REQUEST_CAMERA);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CAMERA) {
+            if (resultCode == RESULT_OK) {
+                onCaptureImageResult(data);
+            }
+        } else if (requestCode == REQUEST_GALLERY) {
+            if (resultCode == RESULT_OK) {
+                onSelectFromGalleryResult(data);
+            }
+        }
+    }
+
+    private void onCaptureImageResult(Intent data) {
+        Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
+
+        Uri imageUri = getImageUri(this, thumbnail);
+//        Glide.with(this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
+//                .load(imageUri).into(mProfileImage);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(user.getUid());
+        mUserDb.child("image").setValue(String.valueOf(imageUri));
+
+    }
+
+    public Uri getImageUri(Context inContext, Bitmap inImage) {
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+        return Uri.parse(path);
+    }
+
+    @SuppressWarnings("deprecation")
+    private void onSelectFromGalleryResult(Intent data) {
+
+        Bitmap bm = null;
+        if (data != null) {
+            try {
+                bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Uri imageUri = getImageUri(this, bm);
+//        Glide.with(this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
+//                .load(imageUri).into(mProfileImage);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(user.getUid());
+        mUserDb.child("image").setValue(String.valueOf(imageUri));
+
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -282,15 +380,15 @@ public class MainActivity extends AppCompatActivity
             displayPerson();
         } else if (id == R.id.nav_owed_to_me) {
             if (mQueryLoadForPersonFinished)
-            displayDebtToMe();
+                displayDebtToMe();
         } else if (id == R.id.nav_owed_by_me) {
             if (mQueryLoadForPersonFinished)
-            displayDebtByMe();
+                displayDebtByMe();
         } else if (id == R.id.nav_share) {
             shareApp();
         }
 
-        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
@@ -309,13 +407,11 @@ public class MainActivity extends AppCompatActivity
     public Loader<Cursor> onCreateLoader(int id, @Nullable Bundle args) {
         mProgressDialog.show();
         CursorLoader loader = null;
-        if(id == LOADER_PERSON) {
+        if (id == LOADER_PERSON) {
             loader = createLoaderPerson();
-        }
-        else if (id == LOADER_DEBT_TO_ME) {
+        } else if (id == LOADER_DEBT_TO_ME) {
             loader = createLoaderDebtToMe();
-        }
-        else if (id == LOADER_DEBT_BY_ME) {
+        } else if (id == LOADER_DEBT_BY_ME) {
             loader = createLoaderDebtByMe();
         }
         return loader;
@@ -335,7 +431,7 @@ public class MainActivity extends AppCompatActivity
                 DebtsEntry.getQName(DebtsEntry.COLUMN_DATE_DUE),
                 DebtsEntry.getQName(DebtsEntry.COLUMN_AMOUNT),
                 DebtsEntry.getQName(DebtsEntry.COLUMN_DATE_ENTERED),
-                DebtsEntry.getQName(DebtsEntry.COLUMN_ENTRY_ID) ,
+                DebtsEntry.getQName(DebtsEntry.COLUMN_ENTRY_ID),
                 DebtsEntry.getQName(DebtsEntry.COLUMN_STATUS),
                 DebtsEntry.getQName(DebtsEntry.COLUMN_NOTE)
         };
@@ -358,7 +454,7 @@ public class MainActivity extends AppCompatActivity
                 DebtsEntry.getQName(DebtsEntry.COLUMN_DATE_DUE),
                 DebtsEntry.getQName(DebtsEntry.COLUMN_AMOUNT),
                 DebtsEntry.getQName(DebtsEntry.COLUMN_DATE_ENTERED),
-                DebtsEntry.getQName(DebtsEntry.COLUMN_ENTRY_ID) ,
+                DebtsEntry.getQName(DebtsEntry.COLUMN_ENTRY_ID),
                 DebtsEntry.getQName(DebtsEntry.COLUMN_STATUS),
                 DebtsEntry.getQName(DebtsEntry.COLUMN_NOTE)
         };
@@ -385,12 +481,10 @@ public class MainActivity extends AppCompatActivity
         mQueryLoadForPersonFinished = true;
         if (loader.getId() == LOADER_PERSON) {
             mPersonRecyclerAdapter.changeCursour(data);
-        }
-        else if (loader.getId() == LOADER_DEBT_TO_ME) {
+        } else if (loader.getId() == LOADER_DEBT_TO_ME) {
             mDebtorRecyclerAdapterToMe.changeCursour(data);
             loadTotalAmountToMe(data);
-        }
-        else if (loader.getId() == LOADER_DEBT_BY_ME) {
+        } else if (loader.getId() == LOADER_DEBT_BY_ME) {
             mDebtorRecyclerAdapterByMe.changeCursour(data);
             loadTotalAmountByMe(data);
         }
@@ -400,11 +494,9 @@ public class MainActivity extends AppCompatActivity
     public void onLoaderReset(@NonNull Loader<Cursor> loader) {
         if (loader.getId() == LOADER_PERSON) {
             mPersonRecyclerAdapter.changeCursour(null);
-        }
-        else if (loader.getId() == LOADER_DEBT_TO_ME) {
+        } else if (loader.getId() == LOADER_DEBT_TO_ME) {
             mDebtorRecyclerAdapterToMe.changeCursour(null);
-        }
-        else if (loader.getId() == LOADER_DEBT_BY_ME) {
+        } else if (loader.getId() == LOADER_DEBT_BY_ME) {
             mDebtorRecyclerAdapterByMe.changeCursour(null);
         }
 
@@ -414,7 +506,7 @@ public class MainActivity extends AppCompatActivity
         double totalAmt = 0;
         int amountPos = data.getColumnIndex(DebtsEntry.COLUMN_AMOUNT);
         int count = data.getCount();
-        for (int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             data.moveToPosition(i);
             totalAmt += Double.parseDouble(data.getString(amountPos));
         }
@@ -425,7 +517,7 @@ public class MainActivity extends AppCompatActivity
         double totalAmt = 0;
         int amountPos = data.getColumnIndex(DebtsEntry.COLUMN_AMOUNT);
         int count = data.getCount();
-        for (int i = 0; i < count; i++){
+        for (int i = 0; i < count; i++) {
             data.moveToPosition(i);
             totalAmt += Double.parseDouble(data.getString(amountPos));
         }
