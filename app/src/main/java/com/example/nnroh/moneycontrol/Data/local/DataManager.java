@@ -6,6 +6,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
+import android.os.AsyncTask;
 
 import com.example.nnroh.moneycontrol.Data.Person;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PersonsEntry;
@@ -20,8 +22,11 @@ import java.util.List;
 
 public class DataManager {
     private final DebtsDbHelper mDbHelper;
+    Context mContext;
+    private Cursor mPaymentCursor;
 
     public DataManager(Context context) {
+        mContext = context;
         mDbHelper = new DebtsDbHelper(context);
     }
 

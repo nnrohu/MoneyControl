@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="16dp"
+    android:padding="16dp"
     tools:context=".App.AddPersonActivity">
 
     <ScrollView
@@ -17,16 +17,32 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="8dp">
 
-            <ImageView
-                android:id="@+id/iv_debtor"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="16dp"
-                android:contentDescription="@string/person_image_description"
-                android:scaleType="centerCrop"
-                android:src="@drawable/ic_avatar" />
+                <ImageView
+                    android:id="@+id/iv_set_profile_image"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerHorizontal="true"
+                    android:layout_gravity="center_horizontal"
+                    android:contentDescription="@string/person_image_description"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_avatar" />
+
+                <ImageView
+                    android:id="@+id/iv_camera_pick"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignEnd="@+id/iv_set_profile_image"
+                    android:layout_alignParentBottom="true"
+                    android:src="@drawable/ic_photo_camera"
+                    app:layout_anchor="@id/iv_set_profile_image"
+                    app:layout_anchorGravity="bottom|end" />
+            </RelativeLayout>
 
 
             <RadioGroup
@@ -159,33 +175,26 @@
             </android.support.design.widget.TextInputLayout>
 
             <Button
-                android:layout_marginTop="16dp"
                 android:id="@+id/btn_date_due"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
+                android:layout_marginTop="16dp"
                 android:background="@drawable/payment_button"
+                android:textColor="@android:color/white"
                 tools:text="Date Due: Friday, March 29th 2017" />
 
             <Button
-                android:layout_marginTop="16dp"
                 android:id="@+id/btn_date_created"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/white"
+                android:layout_marginTop="16dp"
                 android:background="@drawable/payment_button"
+                android:textColor="@android:color/white"
                 tools:text="Created on: Friday, March 29th 2017" />
 
         </LinearLayout>
 
     </ScrollView>
 
-    <ImageView
-        android:id="@+id/iv_camera_pick"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_photo_camera"
-        app:layout_anchor="@id/iv_debtor"
-        app:layout_anchorGravity="bottom|end" />
 
-</android.support.design.widget.CoordinatorLayout>
+</FrameLayout>

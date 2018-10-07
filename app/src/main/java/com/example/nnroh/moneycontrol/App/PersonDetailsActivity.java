@@ -9,7 +9,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -53,6 +52,8 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
 
     public static final int REQUEST_CAMERA = 1;
     public static final int REQUEST_GALLERY = 2;
+    private static final int LOADER_AMOUNT_DETAILS_ME = 4;
+    private static final int LOADER_AMOUNT_DETAILS_TO = 5;
     private ImageView mPersonImage;
     private DataManager mDataManager;
     private Person mPerson;
@@ -65,14 +66,18 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
     private String mPersonName;
     private String mPersonPhoto;
     private ProgressDialog mProgressDialog;
-    private boolean mLoadQueryAmount;
+    private boolean mLoadQueryAmountTo, mLoadQueryAmountMe;
     private String userChoosenTask;
+    private double mTotalMe;
+    private double mTotalTo;
 
 
     @Override
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(LOADER_DEBT_DETAILS, null, this);
+        getLoaderManager().restartLoader(LOADER_AMOUNT_DETAILS_ME, null, this);
+        getLoaderManager().restartLoader(LOADER_AMOUNT_DETAILS_TO, null, this);
 
     }
 
@@ -161,23 +166,6 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
 
     private void onCaptureImageResult(Intent data) {
         Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        thumbnail.compress(Bitmap.CompressFormat.JPEG, 90, bytes);
-
-        File destination = new File(Environment.getExternalStorageDirectory(),
-                System.currentTimeMillis() + ".jpg");
-
-        FileOutputStream fo;
-        try {
-            destination.createNewFile();
-            fo = new FileOutputStream(destination);
-            fo.write(bytes.toByteArray());
-            fo.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
 
         Uri imageUri = getImageUri(this, thumbnail);
         Glide.with(this).applyDefaultRequestOptions(RequestOptions.centerCropTransform())
@@ -295,8 +283,25 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
         CursorLoader loader = null;
         if (id == LOADER_DEBT_DETAILS) {
             loader = createLoaderDebtDetails();
+        }else if (id == LOADER_AMOUNT_DETAILS_TO){
+            loader = createLoaderAmountDetails(Debt.DEBT_TYPE_OWED);
+        }else if (id == LOADER_AMOUNT_DETAILS_ME){
+            loader = createLoaderAmountDetails(Debt.DEBT_TYPE_IOWE);
         }
         return loader;
+    }
+
+    private CursorLoader createLoaderAmountDetails(int debtType) {
+        mLoadQueryAmountTo =false;
+        mLoadQueryAmountMe = false;
+        Uri uri = DebtsEntry.CONTENT_URI;
+        String[] projection = {DebtsEntry.COLUMN_AMOUNT};
+        String selection = DebtsEntry.COLUMN_PERSON_PHONE_NUMBER + " = ? " +
+                " AND " + DebtsEntry.COLUMN_TYPE + " = ? ";
+        String[] selectionArgs = {mNumber, String.valueOf(debtType)};
+
+        return new CursorLoader(this, uri, projection,
+                selection, selectionArgs, null);
     }
 
 
@@ -320,44 +325,50 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mProgressDialog.dismiss();
-        if (loader.getId() == LOADER_DEBT_DETAILS)
+        if (loader.getId() == LOADER_DEBT_DETAILS) {
             mPersonDebtDetailAdapter.changeCursor(data);
+        }
+        else if (loader.getId() == LOADER_AMOUNT_DETAILS_ME){
+            mTotalMe = loadTotalAmount(data);
+            mLoadQueryAmountMe = true;
+        }else if (loader.getId() == LOADER_AMOUNT_DETAILS_TO){
+            mTotalTo = loadTotalAmount(data);
+            mLoadQueryAmountTo = true;
+        }
 
-        double mTotalMe = loadTotalAmount(Debt.DEBT_TYPE_IOWE);
-        double mTotalTo = loadTotalAmount(Debt.DEBT_TYPE_OWED);
-        double mEffectiveAmount = mTotalMe - mTotalTo;
-        mTotalAmountView.setText(String.valueOf(mEffectiveAmount));
+//        double mTotalMe = loadTotalAmount(Debt.DEBT_TYPE_IOWE);
+//        double mTotalTo = loadTotalAmount(Debt.DEBT_TYPE_OWED);
+        if (mLoadQueryAmountMe && mLoadQueryAmountTo) {
+            double mEffectiveAmount = mTotalMe - mTotalTo;
+            mTotalAmountView.setText(String.valueOf(mEffectiveAmount));
+        }
     }
 
     @Override
     public void onLoaderReset(Loader<Cursor> loader) {
-        if (loader.getId() == LOADER_DEBT_DETAILS)
+        if (loader.getId() == LOADER_DEBT_DETAILS) {
             mPersonDebtDetailAdapter.changeCursor(null);
+        }
+        else if (loader.getId() == LOADER_AMOUNT_DETAILS_ME){
+            loadTotalAmount(null);
+        }else if (loader.getId() == LOADER_AMOUNT_DETAILS_TO){
+            loadTotalAmount(null);
+        }
     }
 
-    private double loadTotalAmount(int debtType) {
+
+    private double loadTotalAmount(Cursor cursor) {
 
         double totalAmt = 0;
-        Cursor mCursor;
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
 
-        String[] projection = {DebtsEntry.COLUMN_AMOUNT};
-        String selection = DebtsEntry.COLUMN_PERSON_PHONE_NUMBER + " = ? " +
-                " AND " + DebtsEntry.COLUMN_TYPE + " = ? ";
-        String[] selectionArgs = {mNumber, String.valueOf(debtType)};
-
-        mCursor =  db.query(DebtsEntry.TABLE_NAME, projection,
-                selection, selectionArgs, null, null, null);
-
-        if (mCursor != null && mCursor.getCount() > 0) {
-            int amountPos = mCursor.getColumnIndex(DebtsEntry.COLUMN_AMOUNT);
-            int count = mCursor.getCount();
+        if (cursor != null && cursor.getCount() > 0) {
+            int amountPos = cursor.getColumnIndex(DebtsEntry.COLUMN_AMOUNT);
+            int count = cursor.getCount();
             for (int i = 0; i < count; i++) {
-                mCursor.moveToPosition(i);
-                totalAmt += Double.parseDouble(mCursor.getString(amountPos));
+                cursor.moveToPosition(i);
+                totalAmt += Double.parseDouble(cursor.getString(amountPos));
             }
         }
-        mCursor.close();
         return totalAmt;
     }
 }

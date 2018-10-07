@@ -9,12 +9,12 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +29,7 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.nnroh.moneycontrol.CountryToPhonePrefix;
 import com.example.nnroh.moneycontrol.Data.Debt;
 import com.example.nnroh.moneycontrol.Data.local.DataManager;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.DebtsEntry;
@@ -37,9 +38,6 @@ import com.example.nnroh.moneycontrol.R;
 import com.karan.churi.PermissionManager.PermissionManager;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -66,7 +64,7 @@ public class AddPersonActivity extends AppCompatActivity {
     private EditText mCommentView;
     private Button mDateCreatedView;
     private Button mDateDueView;
-    private String mPersonPhoto;
+    private String mPersonPhotoUri;
     ColorGenerator mGenerator = ColorGenerator.MATERIAL;
 
     RadioGroup mRadioGroup;
@@ -134,7 +132,7 @@ public class AddPersonActivity extends AppCompatActivity {
         mNumberLayout = (TextInputLayout) findViewById(R.id.til_amount);
         mAmountLayout = (TextInputLayout) findViewById(R.id.til_phone_number);
 
-        mPhotoView = (ImageView) findViewById(R.id.iv_debtor);
+        mPhotoView = (ImageView) findViewById(R.id.iv_set_profile_image);
         if (intent.getExtras() != null) {
             if (mImageIntent != null) {
                 Glide.with(this)
@@ -286,47 +284,41 @@ public class AddPersonActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_CONTACT) {
-            if (resultCode == RESULT_OK) {
-                Uri mContactUri = data.getData();
-                retrieveContactName(mContactUri);
-                retrieveContactNumber(mContactUri);
-                retrieveContactPhoto(mContactUri);
-            }
-        } else if (requestCode == REQUEST_CAMERA && requestCode == RESULT_OK) {
-            onCaptureImageResult(data);
+        switch (requestCode) {
+            case REQUEST_CONTACT:
+                if (resultCode == RESULT_OK) {
+                    Uri mContactUri = data.getData();
+                    retrieveContactName(mContactUri);
+                    retrieveContactNumber(mContactUri);
+                    retrieveContactPhoto(mContactUri);
+                }
+                break;
 
-        } else if (requestCode == REQUEST_GALLERY && resultCode == RESULT_OK) {
-            onSelectFromGalleryResult(data);
+            case REQUEST_CAMERA:
+                if (resultCode == RESULT_OK) {
+                    onCaptureImageResult(data);
+                }
+                break;
 
+            case REQUEST_GALLERY:
+                if (resultCode == RESULT_OK) {
+                    onSelectFromGalleryResult(data);
+                }
+                break;
         }
 
     }
 
     private void onCaptureImageResult(Intent data) {
         Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        thumbnail.compress(Bitmap.CompressFormat.JPEG, 96, bytes);
 
-        File destination = new File(Environment.getExternalStorageDirectory(),
-                System.currentTimeMillis() + ".jpg");
-
-        FileOutputStream fo;
-        try {
-            destination.createNewFile();
-            fo = new FileOutputStream(destination);
-            fo.write(bytes.toByteArray());
-            fo.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        Uri tempUri = getImageUri(AddPersonActivity.this, thumbnail);
-        mPersonPhoto = String.valueOf(tempUri);
+        Uri imageUri = getImageUri(this, thumbnail);
+        Glide.with(this).applyDefaultRequestOptions(RequestOptions.centerCropTransform())
+                .load(imageUri).into(mPhotoView);
+        mPersonPhotoUri = String.valueOf(imageUri);
         Glide.with(this)
                 .applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-                .load(tempUri).into(mPhotoView);
+                .load(imageUri).into(mPhotoView);
     }
 
     public Uri getImageUri(Context inContext, Bitmap inImage) {
@@ -348,21 +340,42 @@ public class AddPersonActivity extends AppCompatActivity {
             }
         }
         Uri tempUri = getImageUri(AddPersonActivity.this, bm);
-        mPersonPhoto = String.valueOf(tempUri);
+        mPersonPhotoUri = String.valueOf(tempUri);
         Glide.with(this)
                 .applyDefaultRequestOptions(RequestOptions.circleCropTransform())
                 .load(tempUri).into(mPhotoView);
     }
 
+    private String getCountryISO() {
+        String iso = null;
+        TelephonyManager telephonyManager =
+                (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
+        if (telephonyManager.getNetworkCountryIso() != null){
+            if (!telephonyManager.getNetworkCountryIso().toString().equals("")){
+                iso = telephonyManager.getNetworkCountryIso().toString();
+            }
+        }
+        return CountryToPhonePrefix.getPhone(iso);
+    }
+
 
     private void retrieveContactNumber(Uri mContactUri) {
 
+        String ISOPrefix = getCountryISO();
         // Using the contact ID now we will get contact phone number
         Cursor cursorPhone = getContentResolver().query(mContactUri, new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
                 null, null, null);
 
         if (cursorPhone != null && cursorPhone.moveToFirst()) {
             String contactNumber = cursorPhone.getString(cursorPhone.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+            contactNumber.replace(" ", "");
+            contactNumber.replace("-", "");
+            contactNumber.replace(")", "");
+            contactNumber.replace("(", "");
+
+            if (!String.valueOf(contactNumber.charAt(0)).equals("+")){
+                contactNumber = ISOPrefix + contactNumber;
+            }
             mNumberView.setText(contactNumber);
 
             cursorPhone.close();
@@ -386,11 +399,11 @@ public class AddPersonActivity extends AppCompatActivity {
         if (cursor != null && cursor.getCount() > 0) {
 
             if (cursor.moveToFirst()) {
-                mPersonPhoto = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
-                if (mPersonPhoto != null) {
+                mPersonPhotoUri = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.PHOTO_URI));
+                if (mPersonPhotoUri != null) {
                     Glide.with(this)
                             .applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-                            .load(mPersonPhoto).into(mPhotoView);
+                            .load(mPersonPhotoUri).into(mPhotoView);
                 } else {
                     String letter = String.valueOf(mContactName.charAt(0));
                     //        Create a new TextDrawable for our image's background
@@ -429,7 +442,7 @@ public class AddPersonActivity extends AppCompatActivity {
         Uri debtUri = DebtsEntry.CONTENT_URI;
         Uri personUri = PersonsEntry.CONTENT_URI;
         //Person value
-        String photoString = mPersonPhoto;
+        String photoString = mPersonPhotoUri;
         String nameString = mFullNameView.getText().toString().trim();
         String numberString = mNumberView.getText().toString().trim();
 
@@ -456,13 +469,6 @@ public class AddPersonActivity extends AppCompatActivity {
         debtValues.put(DebtsEntry.COLUMN_STATUS, Debt.DEBT_STATUS_ACTIVE);
         debtValues.put(DebtsEntry.COLUMN_TYPE, mDebtType);
         getContentResolver().insert(debtUri, debtValues);
-
-
-//        Person person = new Person(nameString, numberString, photoString);
-//        Debt debt = new Debt.Builder(entryId, numberString, Double.parseDouble(amountString),
-//                mDateCreatedLong, mDebtType, Debt.DEBT_STATUS_ACTIVE)
-//                .dueDate(mDateDueLong).note(noteString).build();
-//        dm.savePersonDebt(debt, person);
     }
 
     private boolean validateName() {

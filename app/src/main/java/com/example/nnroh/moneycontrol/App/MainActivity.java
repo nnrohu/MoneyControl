@@ -7,7 +7,9 @@ import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -23,18 +25,33 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.example.nnroh.moneycontrol.Adapter.DebtorRecyclerAdapter;
 import com.example.nnroh.moneycontrol.Adapter.PersonRecyclerAdapter;
+import com.example.nnroh.moneycontrol.BuildConfig;
 import com.example.nnroh.moneycontrol.Data.Debt;
 import com.example.nnroh.moneycontrol.Data.PersonDebt;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.DebtsEntry;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PersonsEntry;
 import com.example.nnroh.moneycontrol.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.karan.churi.PermissionManager.PermissionManager;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -42,10 +59,12 @@ public class MainActivity extends AppCompatActivity
 
     public static final String PERSON_NUMBER = "com.example.nnroh.moneycontrol.PERSON_NUMBER";
     public static final String PERSON_NAME = "com.example.nnroh.moneycontrol.PERSON_NAME";
-    public static final String PERSON_IMAGE= "com.example.nnroh.moneycontrol.PERSON_IMAGE";
     public static final int LOADER_PERSON = 0;
     public static final int LOADER_DEBT_TO_ME = 1;
     public static final int LOADER_DEBT_BY_ME = 2;
+
+    ColorGenerator mGenerator = ColorGenerator.MATERIAL;
+
 
     private PersonRecyclerAdapter mPersonRecyclerAdapter;
     private DebtorRecyclerAdapter mDebtorRecyclerAdapterByMe;
@@ -60,6 +79,10 @@ public class MainActivity extends AppCompatActivity
     private ProgressDialog mProgressDialog;
     private boolean mQueryLoadForPersonFinished;
 
+    private FirebaseAuth mAuth;
+    private String mUserName;
+    private String mUserNumber;
+    private String mUserImage;
 
     @Override
     protected void onResume() {
@@ -70,11 +93,26 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        // Check if user is signed in (non-null) and update UI accordingly.
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser == null){
+            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }
+//        updateUI(currentUser);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Toolbar toolbar =  findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        mAuth = FirebaseAuth.getInstance();
+        enableStrictMode();
 
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setMessage("Loading...");
@@ -82,6 +120,12 @@ public class MainActivity extends AppCompatActivity
 
         permission = new PermissionManager(){};
         permission.checkAndRequestPermissions(this);
+
+        Intent intent = getIntent();
+        if (intent.getExtras() != null){
+            mUserName = intent.getStringExtra(LoginActivity.USER_NAME);
+            mUserNumber = intent.getStringExtra(LoginActivity.USER_PHONE_NO);
+        }
 
         FloatingActionButton fab =  findViewById(R.id.fab_add_person);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -101,11 +145,49 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView =  findViewById(R.id.nav_view);
         mTotalAmountToMe = (TextView) navigationView.getMenu().findItem(R.id.nav_owed_to_me).getActionView();
         mTotalAmountByMe = (TextView) navigationView.getMenu().findItem(R.id.nav_owed_by_me).getActionView();
+        View headerView = navigationView.getHeaderView(0);
+        ImageView userImage = headerView.findViewById(R.id.iv_user_image);
+        TextView userName = headerView.findViewById(R.id.tv_user_name);
+        TextView userPhone = headerView.findViewById(R.id.tv_user_phone);
+
+        if (mUserName != null) {
+            final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+            if (user != null){
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                final DatabaseReference mUserDB = database.getReference("user").child(user.getUid());
+                mUserDB.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (!dataSnapshot.exists()){
+                            Map<String, Object> userMap = new HashMap<>();
+                            userMap.put("Name", mUserName);
+                            mUserDB.updateChildren(userMap);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            userName.setText(mUserName);
+        }
+        userPhone.setText(mUserNumber);
 
         navigationView.setNavigationItemSelectedListener(this);
         initializeDisplayContent();
         getLoaderManager().initLoader(LOADER_PERSON, null, this);
 
+    }
+
+    private void enableStrictMode() {
+        if (BuildConfig.DEBUG){
+            StrictMode.ThreadPolicy policy = new  StrictMode.ThreadPolicy.Builder()
+                    .detectAll().penaltyLog().build();
+            StrictMode.setThreadPolicy(policy);
+        }
     }
 
 

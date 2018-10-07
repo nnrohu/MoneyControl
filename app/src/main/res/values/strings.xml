@@ -30,17 +30,11 @@
         "Material is the metaphor.\n\n"
 
         "A material metaphor is the unifying theory of a rationalized space and a system of motion."
-        "The material is grounded in tactile reality, inspired by the study of paper and ink, yet "
-        "technologically advanced and open to imagination and magic.\n"
-        "Surfaces and edges of the material provide visual cues that are grounded in reality. The "
-        "use of familiar tactile attributes helps users quickly understand affordances. Yet the "
-        "flexibility of the material creates new affordances that supercede those in the physical "
-        "world, without breaking the rules of physics.\n"
+
 
     </string>
     <string name="title_activity_person_details">PersonDetails</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="greater_amount_alert">Amount you entered is greater than debt amount</string>
     <string name="empty_error_msg">This Field is required</string>
@@ -48,15 +42,6 @@
 
     <string name="debt_reminder_notification_title_template">Debt reminder: %1$s</string>
 
-    <!-- TODO: remove this placeholder text -->
-    <string name="debt_reminder_notification_placeholder_text_template">You said %1$s and lorem
-        ipsum dolor sit amet, consectetur adipiscing elit. Etiam non enim magna. Morbi dictum, velit
-        vel semper venenatis, magna odio volutpat velit, at ullamcorper nulla lacus sed turpis.
-        Pellentesque vitae metus elit, nec tincidunt tellus. Integer sed nisl sem, ullamcorper
-        ornare lacus. Duis ac mauris sed massa congue volutpat. Donec sed erat sit amet turpis
-        viverra rhoncus sit amet nec magna. Donec lacinia ligula at libero volutpat volutpat nec nec
-        tortor.
-    </string>
     <string name="update_image">Update Image</string>
     <string name="payments_title">Payments details</string>
     <string name="pay_str">Pay</string>
@@ -71,4 +56,16 @@
     <string name="caps_owed">OWE TO ME</string>
     <string name="paid_text">Paid</string>
     <string name="created_date_label">Created on :</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <!-- Strings related to login -->
+    <string name="sign_in_cancelled">Sign in cancelled</string>
+    <string name="no_internet_connection">No Internet connection</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="sign_out_failed">Sign out failed</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="delete">Delete</string>
+    <string name="delete_account_failed">Delete account failed</string>
+    <string name="unknown_sign_in_response">Unknown sign in response</string>
+    <string name="details_about_login">Tap Next to verify your account with your phone number. You don\'t need to manualy enter verification code if the number install in this phone...</string>
 </resources>

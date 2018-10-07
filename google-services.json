@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "595553862269",
+    "firebase_url": "https://moneycontrol-c36c9.firebaseio.com",
+    "project_id": "moneycontrol-c36c9",
+    "storage_bucket": "moneycontrol-c36c9.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:595553862269:android:b1702cf288b389b2",
+        "android_client_info": {
+          "package_name": "com.example.nnroh.moneycontrol"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "595553862269-3l0koe920ef0errcokb0fshrbtict24u.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.nnroh.moneycontrol",
+            "certificate_hash": "4d4fb6be4afe505f5978d124e0be0c7d409bb6d5"
+          }
+        },
+        {
+          "client_id": "595553862269-4lna45lkd2m6adiqv64o3orkgdq3ptih.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCks3XlYFe4kakB6NEstjEtAhma4GTBMIc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "595553862269-4lna45lkd2m6adiqv64o3orkgdq3ptih.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
