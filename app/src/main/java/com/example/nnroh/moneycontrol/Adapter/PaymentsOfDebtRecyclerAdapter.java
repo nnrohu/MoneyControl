@@ -1,6 +1,7 @@
 package com.example.nnroh.moneycontrol.Adapter;
 
 import android.content.Context;
+import android.database.Cursor;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -9,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.example.nnroh.moneycontrol.Data.Payment;
+import com.example.nnroh.moneycontrol.Data.local.DebtsContract;
+import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PaymentsEntry;
 import com.example.nnroh.moneycontrol.R;
 
 import java.text.SimpleDateFormat;
@@ -19,14 +22,31 @@ public class PaymentsOfDebtRecyclerAdapter extends RecyclerView.Adapter<Payments
 
     private Context mContext;
     private final LayoutInflater mLayoutInflater;
-    private List<Payment> mPayments;
+  //  private List<Payment> mPayments;
+    private Cursor mCursor;
+    private int mPaymentAmountPos;
+    private int mPaymentNotePos;
+    private int mPaymentCreateDatePos;
 
-    public PaymentsOfDebtRecyclerAdapter(Context context, List<Payment> payments) {
+    public PaymentsOfDebtRecyclerAdapter(Context context, Cursor cursor) {
         mContext = context;
         mLayoutInflater = LayoutInflater.from(context);
-        mPayments = payments;
+        mCursor = cursor;
     }
 
+    public void changeCursour(Cursor cursor){
+        if (mCursor != null)
+            mCursor.close();
+        mCursor = cursor;
+        populateColumnPosition();
+        notifyDataSetChanged();
+    }
+
+    private void populateColumnPosition() {
+        mPaymentAmountPos = mCursor.getColumnIndex(PaymentsEntry.COLUMN_AMOUNT);
+        mPaymentNotePos = mCursor.getColumnIndex(PaymentsEntry.COLUMN_NOTE);
+        mPaymentCreateDatePos = mCursor.getColumnIndex(PaymentsEntry.COLUMN_DATE_ENTERED);
+    }
 
     @NonNull
     @Override
@@ -37,12 +57,12 @@ public class PaymentsOfDebtRecyclerAdapter extends RecyclerView.Adapter<Payments
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        mCursor.moveToPosition(position);
+        long paymentCreateDate = Long.parseLong(mCursor.getString(mPaymentCreateDatePos));
+        String paymentNote = mCursor.getString(mPaymentNotePos);
+        String paymentAmount = mCursor.getString(mPaymentAmountPos);
 
-        long paymentCreateDate = mPayments.get(position).getDateEntered();
-        String paymentNote = mPayments.get(position).getNote();
-        double paymentAmount =  mPayments.get(position).getAmount();
-
-        holder.mPaymentAmount.setText(String.valueOf(paymentAmount));
+        holder.mPaymentAmount.setText(paymentAmount);
         holder.mPaymentCreateDate.setText(mContext.getString(R.string.dated_label) + getDate(paymentCreateDate));
         holder.mPaymentNote.setText(paymentNote);
 
@@ -51,7 +71,7 @@ public class PaymentsOfDebtRecyclerAdapter extends RecyclerView.Adapter<Payments
 
     @Override
     public int getItemCount() {
-       return mPayments.size();
+       return mCursor == null ? 0 : mCursor.getCount();
     }
 
      public class ViewHolder extends RecyclerView.ViewHolder{

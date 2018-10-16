@@ -23,7 +23,7 @@
                 android:padding="8dp">
 
                 <ImageView
-                    android:id="@+id/iv_set_profile_image"
+                    android:id="@+id/iv_get_contact_image"
                     android:layout_width="100dp"
                     android:layout_height="100dp"
                     android:layout_alignParentBottom="true"
@@ -37,10 +37,10 @@
                     android:id="@+id/iv_camera_pick"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_alignEnd="@+id/iv_set_profile_image"
+                    android:layout_alignEnd="@+id/iv_get_contact_image"
                     android:layout_alignParentBottom="true"
                     android:src="@drawable/ic_photo_camera"
-                    app:layout_anchor="@id/iv_set_profile_image"
+                    app:layout_anchor="@id/iv_get_contact_image"
                     app:layout_anchorGravity="bottom|end" />
             </RelativeLayout>
 
@@ -92,7 +92,8 @@
                         android:layout_centerVertical="true"
                         android:hint="@string/person_name"
                         android:inputType="textPersonName"
-                        android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                        android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                        android:autofillHints="" />
 
                 </android.support.design.widget.TextInputLayout>
 
@@ -131,7 +132,8 @@
                     android:layout_centerVertical="true"
                     android:hint="@string/phone_number"
                     android:inputType="phone"
-                    android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                    android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                    android:importantForAutofill="no" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -149,7 +151,8 @@
                     android:layout_centerVertical="true"
                     android:hint="@string/amount"
                     android:inputType="numberDecimal"
-                    android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+                    android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                    android:autofillHints="" />
 
             </android.support.design.widget.TextInputLayout>
 
@@ -170,7 +173,8 @@
                     android:layout_centerVertical="true"
                     android:hint="@string/comment"
                     android:inputType=""
-                    android:maxLength="50" />
+                    android:maxLength="50"
+                    android:autofillHints="" />
 
             </android.support.design.widget.TextInputLayout>
 

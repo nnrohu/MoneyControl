@@ -7,11 +7,15 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.StrictMode;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,6 +30,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -87,16 +92,18 @@ public class MainActivity extends AppCompatActivity
 
     public static final int REQUEST_CAMERA = 7;
     public static final int REQUEST_GALLERY = 8;
+
     private TextView mUserName;
     private TextView mUserPhone;
+    private SharedPreferences mPref;
 
     @Override
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(LOADER_DEBT_BY_ME, null, this);
         getLoaderManager().restartLoader(LOADER_DEBT_TO_ME, null, this);
-
     }
+
 
     @Override
     protected void onStart() {
@@ -107,23 +114,25 @@ public class MainActivity extends AppCompatActivity
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
-        }else {
+        } else {
             updateUI(currentUser);
         }
     }
 
     private void updateUI(final FirebaseUser currentUser) {
-        DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(currentUser.getUid());
+        final DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(currentUser.getUid());
 
         mUserDb.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                String nameVal = (String) dataSnapshot.child("name").getValue();
+                if (dataSnapshot.hasChild("name")) {
+                    String nameVal = (String) dataSnapshot.child("name").getValue();
+                    mUserName.setText(nameVal);
+                }
                 String phoneVal = (String) dataSnapshot.child("phone").getValue();
-                mUserName.setText(nameVal);
                 mUserPhone.setText(phoneVal);
-                String imageVal = (String) dataSnapshot.child("image").getValue();
-                if (!imageVal.equals("")){
+                if (dataSnapshot.hasChild("image")) {
+                    String imageVal = (String) dataSnapshot.child("image").getValue();
                     Glide.with(MainActivity.this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
                             .load(imageVal).into(mProfileImage);
                 }
@@ -202,7 +211,8 @@ public class MainActivity extends AppCompatActivity
     private void initializeDisplayContent() {
         mRecyclerView = findViewById(R.id.item_person_list);
         //person adapter
-        mGridLayoutManagerForPerson = new GridLayoutManager(this, 4);
+        mGridLayoutManagerForPerson = new GridLayoutManager(this,
+                getResources().getInteger(R.integer.person_grid_span));
 
 
         mPersonRecyclerAdapter = new PersonRecyclerAdapter(this, null);
@@ -340,7 +350,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -348,27 +358,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
@@ -436,6 +425,7 @@ public class MainActivity extends AppCompatActivity
                 DebtsEntry.getQName(DebtsEntry.COLUMN_NOTE)
         };
 
+
         return new CursorLoader(this, uri, projection, selection, selectionArgs, null);
     }
 
@@ -459,6 +449,7 @@ public class MainActivity extends AppCompatActivity
                 DebtsEntry.getQName(DebtsEntry.COLUMN_NOTE)
         };
 
+
         return new CursorLoader(this, uri, projection, selection, selectionArgs, null);
     }
 
@@ -471,7 +462,8 @@ public class MainActivity extends AppCompatActivity
                 PersonsEntry.COLUMN_IMAGE_URI,
                 PersonsEntry.COLUMN_NAME,
                 PersonsEntry.COLUMN_PHONE_NO};
-        return new CursorLoader(this, uri, personColumns, null, null, null);
+        String sortOrder = PersonsEntry.COLUMN_NAME + " ASC ";
+        return new CursorLoader(this, uri, personColumns, null, null, sortOrder);
 
     }
 

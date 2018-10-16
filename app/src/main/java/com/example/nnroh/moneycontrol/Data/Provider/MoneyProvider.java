@@ -275,6 +275,15 @@ public class MoneyProvider extends ContentProvider {
             case DEBT_JOIN_ID:
                 break;
 
+            case PAYMENT:
+
+                cursor = db.query(PaymentsEntry.TABLE_NAME, projection, selection, selectionArgs,null, null, sortOrder);
+
+                break;
+
+            case PAYMENT_ID:
+                break;
+
             default:
                 throw new IllegalArgumentException("Cannot query unknown URI " + uri);
         }

@@ -12,8 +12,8 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -39,9 +39,6 @@ import com.example.nnroh.moneycontrol.Data.local.DebtsDbHelper;
 import com.example.nnroh.moneycontrol.R;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import static com.example.nnroh.moneycontrol.App.AddPersonActivity.PERSON_NAME;
@@ -86,7 +83,7 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_person_details);
-        Toolbar toolbar =  findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         mDbHelper = new DebtsDbHelper(this);
         mDataManager = new DataManager(this);
@@ -101,8 +98,8 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
         mProgressDialog = new ProgressDialog(this);
         mProgressDialog.setMessage("Loading...");
         mProgressDialog.setIndeterminate(true);
-        mPersonImage =  findViewById(R.id.iv_person);
-        mTotalAmountView =  findViewById(R.id.tv_total_amount);
+        mPersonImage = findViewById(R.id.iv_person);
+        mTotalAmountView = findViewById(R.id.tv_total_amount);
 
         if (intent.getExtras() != null) {
             if (mPersonPhoto != null) {
@@ -115,10 +112,10 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
                 mPersonImage.setImageDrawable(drawable);
             }
         }
-        CollapsingToolbarLayout layout =  findViewById(R.id.toolbar_layout);
+        CollapsingToolbarLayout layout = findViewById(R.id.toolbar_layout);
         layout.setTitle(mPersonName);
 
-        RecyclerView personDebtRecycler =  findViewById(R.id.item_person_debt_list);
+        RecyclerView personDebtRecycler = findViewById(R.id.item_person_debt_list);
         mPersonDebtDetailAdapter = new PersonDebtDetailsAdapter(this, null);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         personDebtRecycler.setLayoutManager(layoutManager);
@@ -139,10 +136,10 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
         if (id == R.id.action_call) {
             callDebtor();
         } else if (id == R.id.action_sms) {
-            smsDebtor();
+                smsDebtor();
         } else if (id == R.id.action_add_debt) {
             addDebt();
-        }else if (id == R.id.action_update_image){
+        } else if (id == R.id.action_update_image) {
             showDialogOptionForImage();
         }
         return super.onOptionsItemSelected(item);
@@ -180,7 +177,7 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
 
         String[] selectionArgs = {mNumber};
 
-        getContentResolver().update(uri, values, where, selectionArgs );
+        getContentResolver().update(uri, values, where, selectionArgs);
 
     }
 
@@ -194,7 +191,7 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
     @SuppressWarnings("deprecation")
     private void onSelectFromGalleryResult(Intent data) {
 
-        Bitmap bm=null;
+        Bitmap bm = null;
         if (data != null) {
             try {
                 bm = MediaStore.Images.Media.getBitmap(getApplicationContext().getContentResolver(), data.getData());
@@ -215,7 +212,7 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
 
         String[] selectionArgs = {mNumber};
 
-        getContentResolver().update(uri, values, where, selectionArgs );
+        getContentResolver().update(uri, values, where, selectionArgs);
     }
 
 
@@ -238,8 +235,8 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
     }
 
     private void showDialogOptionForImage() {
-        final CharSequence[] items = { "Take Photo", "Choose from Library",
-                "Cancel" };
+        final CharSequence[] items = {"Take Photo", "Choose from Library",
+                "Cancel"};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(PersonDetailsActivity.this);
         builder.setTitle("Add Photo!");
@@ -248,11 +245,11 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
             public void onClick(DialogInterface dialog, int item) {
 
                 if (items[item].equals("Take Photo")) {
-                    userChoosenTask ="Take Photo";
+                    userChoosenTask = "Take Photo";
                     cameraIntent();
 
                 } else if (items[item].equals("Choose from Library")) {
-                    userChoosenTask ="Choose from Library";
+                    userChoosenTask = "Choose from Library";
                     galleryIntent();
 
                 } else if (items[item].equals("Cancel")) {
@@ -263,16 +260,14 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
         builder.show();
     }
 
-    private void galleryIntent()
-    {
+    private void galleryIntent() {
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);//
-        startActivityForResult(Intent.createChooser(intent, "Select File"),REQUEST_GALLERY);
+        startActivityForResult(Intent.createChooser(intent, "Select File"), REQUEST_GALLERY);
     }
 
-    private void cameraIntent()
-    {
+    private void cameraIntent() {
         Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(intent, REQUEST_CAMERA);
     }
@@ -283,16 +278,16 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
         CursorLoader loader = null;
         if (id == LOADER_DEBT_DETAILS) {
             loader = createLoaderDebtDetails();
-        }else if (id == LOADER_AMOUNT_DETAILS_TO){
+        } else if (id == LOADER_AMOUNT_DETAILS_TO) {
             loader = createLoaderAmountDetails(Debt.DEBT_TYPE_OWED);
-        }else if (id == LOADER_AMOUNT_DETAILS_ME){
+        } else if (id == LOADER_AMOUNT_DETAILS_ME) {
             loader = createLoaderAmountDetails(Debt.DEBT_TYPE_IOWE);
         }
         return loader;
     }
 
     private CursorLoader createLoaderAmountDetails(int debtType) {
-        mLoadQueryAmountTo =false;
+        mLoadQueryAmountTo = false;
         mLoadQueryAmountMe = false;
         Uri uri = DebtsEntry.CONTENT_URI;
         String[] projection = {DebtsEntry.COLUMN_AMOUNT};
@@ -319,7 +314,9 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
         String selection = DebtsEntry.COLUMN_PERSON_PHONE_NUMBER + " = ? ";
         String[] selectionArgs = {mNumber};
 
-        return new CursorLoader(this, uri, debtDetails, selection, selectionArgs, null);
+        String sortOrder = DebtsEntry.COLUMN_AMOUNT + " DESC";
+
+        return new CursorLoader(this, uri, debtDetails, selection, selectionArgs, sortOrder);
     }
 
     @Override
@@ -327,11 +324,10 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
         mProgressDialog.dismiss();
         if (loader.getId() == LOADER_DEBT_DETAILS) {
             mPersonDebtDetailAdapter.changeCursor(data);
-        }
-        else if (loader.getId() == LOADER_AMOUNT_DETAILS_ME){
+        } else if (loader.getId() == LOADER_AMOUNT_DETAILS_ME) {
             mTotalMe = loadTotalAmount(data);
             mLoadQueryAmountMe = true;
-        }else if (loader.getId() == LOADER_AMOUNT_DETAILS_TO){
+        } else if (loader.getId() == LOADER_AMOUNT_DETAILS_TO) {
             mTotalTo = loadTotalAmount(data);
             mLoadQueryAmountTo = true;
         }
@@ -348,10 +344,9 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
     public void onLoaderReset(Loader<Cursor> loader) {
         if (loader.getId() == LOADER_DEBT_DETAILS) {
             mPersonDebtDetailAdapter.changeCursor(null);
-        }
-        else if (loader.getId() == LOADER_AMOUNT_DETAILS_ME){
+        } else if (loader.getId() == LOADER_AMOUNT_DETAILS_ME) {
             loadTotalAmount(null);
-        }else if (loader.getId() == LOADER_AMOUNT_DETAILS_TO){
+        } else if (loader.getId() == LOADER_AMOUNT_DETAILS_TO) {
             loadTotalAmount(null);
         }
     }

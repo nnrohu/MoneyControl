@@ -25,6 +25,7 @@ import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PersonsEntry;
 import com.example.nnroh.moneycontrol.Dialog.PaymentDetailsFragment;
 import com.example.nnroh.moneycontrol.R;
 import com.example.nnroh.moneycontrol.Data.PersonDebt;
+import com.example.nnroh.moneycontrol.Utils.DebtNotification;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -88,6 +89,7 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
         String debtAmount = mCursor.getString(mDebtAmountPos);
         long debtCreateDate = mCursor.getLong(mDebtDateCreatePos);
         long debtDueDate = mCursor.getLong(mDebtDateDuePos);
+
         String debtNote = mCursor.getString(mDebtNotePos);
         String debtId = mCursor.getString(mDebtIdPos);
 
@@ -103,9 +105,10 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
         holder.mDebtorName.setText(personName);
         holder.mDebtorAmount.setText(debtAmount);
         holder.mDebtorNote.setText(debtNote);
-        if (Calendar.getInstance().getTimeInMillis() > debtDueDate)
+        if (Calendar.getInstance().getTimeInMillis() > debtDueDate) {
             holder.mDebtorDueDate.setTextColor(Color.RED);
-
+            DebtNotification.notify(mContext, personName, debtAmount);
+        }
         holder.mDebtorDueDate.setText(mContext.getString(R.string.due_date_label) + getDate(debtDueDate));
 
         holder.mDebtorCreateDate.setText(mContext.getString(R.string.created_date_label) + getDate(debtCreateDate));

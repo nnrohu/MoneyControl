@@ -132,7 +132,7 @@ public class AddPersonActivity extends AppCompatActivity {
         mNumberLayout = (TextInputLayout) findViewById(R.id.til_amount);
         mAmountLayout = (TextInputLayout) findViewById(R.id.til_phone_number);
 
-        mPhotoView = (ImageView) findViewById(R.id.iv_set_profile_image);
+        mPhotoView = (ImageView) findViewById(R.id.iv_get_contact_image);
         if (intent.getExtras() != null) {
             if (mImageIntent != null) {
                 Glide.with(this)
@@ -351,8 +351,8 @@ public class AddPersonActivity extends AppCompatActivity {
         TelephonyManager telephonyManager =
                 (TelephonyManager) getApplicationContext().getSystemService(getApplicationContext().TELEPHONY_SERVICE);
         if (telephonyManager.getNetworkCountryIso() != null){
-            if (!telephonyManager.getNetworkCountryIso().toString().equals("")){
-                iso = telephonyManager.getNetworkCountryIso().toString();
+            if (!telephonyManager.getNetworkCountryIso().equals("")){
+                iso = telephonyManager.getNetworkCountryIso();
             }
         }
         return CountryToPhonePrefix.getPhone(iso);

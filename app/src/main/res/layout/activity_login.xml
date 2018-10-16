@@ -136,6 +136,7 @@
                 android:layout_height="wrap_content"
                 android:text="Enter the code that was send to"
                 android:textAlignment="center"
+                android:layout_gravity="center_horizontal"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -144,6 +145,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="+918372890302"
+                android:layout_gravity="center_horizontal"
                 android:textAlignment="center"
                 android:textColor="#019b77"
                 android:textSize="20sp"
@@ -161,6 +163,7 @@
                 android:textColor="#222222"
                 android:textSize="18sp"
                 app:cursorColor="@color/colorAccent"
+                android:layout_gravity="center_horizontal"
                 app:cursorWidth="2dp"
                 app:itemCount="6"
                 app:itemHeight="48dp"
@@ -180,27 +183,11 @@
                 android:layout_marginTop="25dp"
                 android:background="@drawable/button_main_background"
                 android:text="continue"
+                android:layout_gravity="center_horizontal"
                 android:textColor="#fff"
                 android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:text="I didn't get a code"
-                android:textAlignment="center"
-                android:textColor="#019b77"
-                android:textSize="20sp"
-                android:textStyle="bold" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="10dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="20dp"
-                android:text="Tap Continue to accept our Terms,Data Policy, cookie use and the Privacy Policy and Terms of Service..."
-                android:textAlignment="center" />
         </LinearLayout>
 
         <LinearLayout
@@ -208,7 +195,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:background="#00A99D"
-            android:gravity="center"
+            android:layout_marginTop="30dp"
             android:visibility="gone"
             android:orientation="vertical">
 
@@ -218,6 +205,7 @@
                 android:id="@+id/et_set_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:layout_marginEnd="40dp"
                 android:layout_marginStart="40dp"
                 android:background="@drawable/edittext_background"

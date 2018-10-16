@@ -1,14 +1,9 @@
 package com.example.nnroh.moneycontrol.App;
 
 import android.app.AlertDialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -22,9 +17,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.RequestOptions;
 import com.chaos.view.PinView;
 import com.example.nnroh.moneycontrol.R;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -42,12 +34,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.karan.churi.PermissionManager.PermissionManager;
 import com.rilixtech.CountryCodePicker;
 import com.shuhart.stepview.StepView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +54,6 @@ public class LoginActivity extends AppCompatActivity {
     CountryCodePicker ccp;
 
     private FirebaseAuth mAuth;
-    private boolean mVerificationInProgress = false;
     private String mVerificationId;
     private PhoneAuthProvider.ForceResendingToken mResendToken;
     private PhoneAuthProvider.OnVerificationStateChangedCallbacks mCallbacks;
@@ -80,9 +68,8 @@ public class LoginActivity extends AppCompatActivity {
     LinearLayout layout1, layout2, layout3;
     StepView stepView;
     AlertDialog dialog_verifying, profile_dialog;
-    private TextView mPhonNumberView;
-
-    private String userChoosenTask;
+    private TextView mPhoneNumberView;
+    private ImageView mProfileImage;
 
 
     @Override
@@ -107,7 +94,7 @@ public class LoginActivity extends AppCompatActivity {
         //edittext
         mPhoneNumberField = findViewById(R.id.et_phone_number);
         verifyCodeET = (PinView) findViewById(R.id.pinView);
-        mPhonNumberView = findViewById(R.id.tv_phone_number);
+        mPhoneNumberView = findViewById(R.id.tv_phone_number);
 
         stepView = findViewById(R.id.step_view);
         stepView.setStepsNumber(3);
@@ -122,7 +109,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 phoneNumber = ccp.getFullNumberWithPlus();
                // String phoneNumberWithCode = "+91" + phoneNumber;
-                mPhonNumberView.setText(phoneNumber);
+                mPhoneNumberView.setText(phoneNumber);
                 if (TextUtils.isEmpty(phoneNumber)) {
                     mPhoneNumberField.setError("Enter a Phone Number");
                     mPhoneNumberField.requestFocus();
@@ -178,9 +165,8 @@ public class LoginActivity extends AppCompatActivity {
 
                 final String profileName = mProfileName.getText().toString();
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(user.getUid());
+                final DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(user.getUid());
                 mUserDb.child("name").setValue(profileName);
-                mUserDb.child("image").setValue("");
 
                 if (TextUtils.isEmpty(profileName)) {
                     mProfileName.setError("This field is required.");
@@ -269,7 +255,8 @@ public class LoginActivity extends AppCompatActivity {
                 mVerificationId = verificationId;
                 mResendToken = token;
                 Toast.makeText(LoginActivity.this, "Code Sent", Toast.LENGTH_SHORT);
-
+                Snackbar.make(findViewById(android.R.id.content)," Code Sent",
+                        Snackbar.LENGTH_SHORT).show();
             }
         };
         // [END phone_auth_callbacks]
@@ -297,7 +284,7 @@ public class LoginActivity extends AppCompatActivity {
 
                             final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                             if (user != null){
-                                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                                final FirebaseDatabase database = FirebaseDatabase.getInstance();
                                 final DatabaseReference mUserDB = database.getReference("user").child(user.getUid());
                                 mUserDB.addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
@@ -307,6 +294,10 @@ public class LoginActivity extends AppCompatActivity {
                                             userMap.put("phone", user.getPhoneNumber());
                                             mUserDB.updateChildren(userMap);
                                         }
+                                        if (dataSnapshot.hasChild("name"))
+                                            mProfileName.setText((String) dataSnapshot.child("name").getValue());
+
+
                                     }
 
                                     @Override
