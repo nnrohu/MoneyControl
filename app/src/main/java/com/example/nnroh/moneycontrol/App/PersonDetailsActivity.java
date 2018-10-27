@@ -235,24 +235,22 @@ public class PersonDetailsActivity extends AppCompatActivity implements LoaderMa
     }
 
     private void showDialogOptionForImage() {
-        final CharSequence[] items = {"Take Photo", "Choose from Library",
-                "Cancel"};
+        final CharSequence[] items = {getString(R.string.take_photo), getString(R.string.choose_from_library),
+                getString(R.string.cancel)};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(PersonDetailsActivity.this);
-        builder.setTitle("Add Photo!");
+        builder.setTitle(R.string.add_photo_label);
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
 
-                if (items[item].equals("Take Photo")) {
-                    userChoosenTask = "Take Photo";
+                if (items[item].equals(getString(R.string.take_photo))) {
                     cameraIntent();
 
-                } else if (items[item].equals("Choose from Library")) {
-                    userChoosenTask = "Choose from Library";
+                } else if (items[item].equals(getString(R.string.choose_from_library))) {
                     galleryIntent();
 
-                } else if (items[item].equals("Cancel")) {
+                } else if (items[item].equals(getString(R.string.cancel))) {
                     dialog.dismiss();
                 }
             }

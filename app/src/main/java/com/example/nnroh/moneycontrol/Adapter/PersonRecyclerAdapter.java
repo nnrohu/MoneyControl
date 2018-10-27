@@ -107,8 +107,8 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<PersonRecyclerAd
         public ViewHolder(View itemView) {
             super(itemView);
 
-            mPersonImage = (ImageView) itemView.findViewById(R.id.iv_person_image);
-            mPersonName = (TextView) itemView.findViewById(R.id.tv_person_name);
+            mPersonImage =  itemView.findViewById(R.id.iv_person_image);
+            mPersonName =  itemView.findViewById(R.id.tv_person_name);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -119,13 +119,6 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<PersonRecyclerAd
                     intent.putExtra(PERSON_PHOTO, mCurrentPersonImage);
                     mContext.startActivity(intent);
 
-//                    Bundle bundle = new Bundle();
-//                    bundle.putString(MainActivity.PERSON_NUMBER, mCurrentPersonNumber);
-//                    bundle.putString(MainActivity.PERSON_NAME, mCurrentPersonName);
-//                    bundle.putString(MainActivity.PERSON_IMAGE, mCurrentPersonImage);
-//                    PersonDetailsDialogFragment dialogFragment = new PersonDetailsDialogFragment();
-//                    dialogFragment.show(((AppCompatActivity)mContext).getSupportFragmentManager(), dialogFragment.getTag());
-//                    dialogFragment.setArguments(bundle);
                 }
             });
         }

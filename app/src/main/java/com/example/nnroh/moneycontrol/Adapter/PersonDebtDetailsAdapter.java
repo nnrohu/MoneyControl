@@ -121,19 +121,6 @@ public class PersonDebtDetailsAdapter extends
         return mCursor == null ? 0 : mCursor.getCount();
     }
 
-    public void removeItem(final String debtId) {
-        Uri debtUri = DebtsEntry.CONTENT_URI;
-        Uri paymentUri = PaymentsEntry.CONTENT_URI;
-        String selection = DebtsEntry.COLUMN_ENTRY_ID + " = ? ";
-        String[] selectionArgs = {String.valueOf(debtId)};
-        mContext.getContentResolver().delete(debtUri,selection, selectionArgs);
-        DataManager dm = new DataManager(mContext);
-        if(dm.debtHasPayments(debtId)){
-            String selectionPayment = PaymentsEntry.COLUMN_DEBT_ID + " = ? ";
-            mContext.getContentResolver().delete(paymentUri, selectionPayment, selectionArgs);
-        }
-    }
-
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
@@ -141,26 +128,18 @@ public class PersonDebtDetailsAdapter extends
         private long mDateLong;
         String debtId, phoneNo;
         double amountToTrans;
-        private final ImageView mDeleteDebt;
 
 
         public ViewHolder(View itemView) {
             super(itemView);
 
-            mDebtAmount = (TextView) itemView.findViewById(R.id.tv_debt_amount);
-            mDebtDueDate = (TextView) itemView.findViewById(R.id.tv_debt_due_date);
-            mDebtNote = (TextView) itemView.findViewById(R.id.tv_debt_note);
-            mDebtType = (TextView) itemView.findViewById(R.id.tv_debt_type);
-            mDebtPay = (TextView) itemView.findViewById(R.id.tv_payment);
+            mDebtAmount =  itemView.findViewById(R.id.tv_debt_amount);
+            mDebtDueDate =  itemView.findViewById(R.id.tv_debt_due_date);
+            mDebtNote =  itemView.findViewById(R.id.tv_debt_note);
+            mDebtType =  itemView.findViewById(R.id.tv_debt_type);
+            mDebtPay =  itemView.findViewById(R.id.tv_payment);
 
-            mDeleteDebt = itemView.findViewById(R.id.iv_delete_person_debt);
-            mDeleteDebt.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    removeItem(debtId);
-                    Toast.makeText(mContext, "Deleted", Toast.LENGTH_SHORT).show();
-                }
-            });
+
             mDebtPay.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

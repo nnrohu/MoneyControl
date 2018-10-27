@@ -19,17 +19,14 @@ import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.example.nnroh.moneycontrol.App.PaymentActivity;
-import com.example.nnroh.moneycontrol.Data.local.DebtsContract;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.DebtsEntry;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PersonsEntry;
 import com.example.nnroh.moneycontrol.Dialog.PaymentDetailsFragment;
+import com.example.nnroh.moneycontrol.Notification.NotificationUtils;
 import com.example.nnroh.moneycontrol.R;
-import com.example.nnroh.moneycontrol.Data.PersonDebt;
-import com.example.nnroh.moneycontrol.Utils.DebtNotification;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.List;
 
 
 public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAdapter.ViewHolder>{
@@ -107,7 +104,7 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
         holder.mDebtorNote.setText(debtNote);
         if (Calendar.getInstance().getTimeInMillis() > debtDueDate) {
             holder.mDebtorDueDate.setTextColor(Color.RED);
-            DebtNotification.notify(mContext, personName, debtAmount);
+            NotificationUtils.remindUserForReview(mContext);
         }
         holder.mDebtorDueDate.setText(mContext.getString(R.string.due_date_label) + getDate(debtDueDate));
 

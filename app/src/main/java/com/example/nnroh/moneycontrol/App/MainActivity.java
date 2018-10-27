@@ -2,25 +2,29 @@ package com.example.nnroh.moneycontrol.App;
 
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
+import android.os.BatteryManager;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.StrictMode;
-import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -30,12 +34,13 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.view.Gravity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
@@ -47,9 +52,25 @@ import com.example.nnroh.moneycontrol.Data.Debt;
 import com.example.nnroh.moneycontrol.Data.PersonDebt;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.DebtsEntry;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PersonsEntry;
+import com.example.nnroh.moneycontrol.Notification.DebtReminder;
+import com.example.nnroh.moneycontrol.Notification.DebtReminderIntentService;
+import com.example.nnroh.moneycontrol.Notification.ReminderTasks;
 import com.example.nnroh.moneycontrol.R;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -70,13 +91,14 @@ public class MainActivity extends AppCompatActivity
     public static final int LOADER_PERSON = 0;
     public static final int LOADER_DEBT_TO_ME = 1;
     public static final int LOADER_DEBT_BY_ME = 2;
+    private static final int RC_SIGN_IN = 2;
+    private static final String TAG = "MainActivity.class";
 
     ColorGenerator mGenerator = ColorGenerator.MATERIAL;
 
 
     private PersonRecyclerAdapter mPersonRecyclerAdapter;
     private DebtorRecyclerAdapter mDebtorRecyclerAdapterByMe;
-    private List<PersonDebt> mDebtListMe, mDebtListToMe;
     private PermissionManager permission;
     private RecyclerView mRecyclerView;
     private GridLayoutManager mGridLayoutManagerForPerson;
@@ -97,52 +119,62 @@ public class MainActivity extends AppCompatActivity
     private TextView mUserPhone;
     private SharedPreferences mPref;
 
+    GoogleApiClient mGoogleApiClient;
+    private SignInButton mSignInButton;
+
     @Override
     protected void onResume() {
         super.onResume();
+
         getLoaderManager().restartLoader(LOADER_DEBT_BY_ME, null, this);
         getLoaderManager().restartLoader(LOADER_DEBT_TO_ME, null, this);
+
     }
 
 
     @Override
-    protected void onStart() {
+    public void onStart() {
         super.onStart();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser == null) {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        } else {
+        if (currentUser != null) {
+            mSignInButton.setVisibility(View.GONE);
             updateUI(currentUser);
         }
     }
 
-    private void updateUI(final FirebaseUser currentUser) {
-        final DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(currentUser.getUid());
+    private void updateUI( FirebaseUser currentUser) {
+        GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
+        Uri imageUri = account.getPhotoUrl();
+        if (imageUri == null) {
+            DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(currentUser.getUid());
 
-        mUserDb.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                if (dataSnapshot.hasChild("name")) {
-                    String nameVal = (String) dataSnapshot.child("name").getValue();
-                    mUserName.setText(nameVal);
-                }
-                String phoneVal = (String) dataSnapshot.child("phone").getValue();
-                mUserPhone.setText(phoneVal);
-                if (dataSnapshot.hasChild("image")) {
+            mUserDb.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     String imageVal = (String) dataSnapshot.child("image").getValue();
-                    Glide.with(MainActivity.this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-                            .load(imageVal).into(mProfileImage);
+                    if (imageVal != null) {
+                        Glide.with(getApplicationContext())
+                                .applyDefaultRequestOptions(RequestOptions.circleCropTransform())
+                                .load(imageVal).into(mProfileImage);
+                    }
                 }
-            }
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-            }
-        });
+                }
+            });
+        }
+
+        String name = account.getDisplayName();
+        String email = account.getEmail();
+        if (imageUri != null) {
+            Glide.with(this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
+                    .load(imageUri).into(mProfileImage);
+        }
+        mUserName.setText(name);
+        mUserPhone.setText(email);
     }
 
     @Override
@@ -171,6 +203,9 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        //show notification dily
+        DebtReminder.showNotificationReminder(this);
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -183,8 +218,20 @@ public class MainActivity extends AppCompatActivity
         View headerView = navigationView.getHeaderView(0);
         mProfileImage = headerView.findViewById(R.id.iv_user_image);
         mUserName = headerView.findViewById(R.id.tv_user_name);
-        mUserPhone = headerView.findViewById(R.id.tv_user_phone);
+        mUserPhone = headerView.findViewById(R.id.tv_user_email);
         ImageView imageEdit = headerView.findViewById(R.id.iv_profile_edit);
+        mSignInButton = headerView.findViewById(R.id.google_sign_in);
+        mSignInButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (checkNetworkConnection()) {
+                    signIn();
+                }
+                else {
+                    Snackbar.make(v, getString(R.string.no_internet_connection), Snackbar.LENGTH_LONG).show();
+                }
+            }
+        });
 
         imageEdit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -197,6 +244,60 @@ public class MainActivity extends AppCompatActivity
         initializeDisplayContent();
         getLoaderManager().initLoader(LOADER_PERSON, null, this);
 
+        // Initialize Firebase Auth
+        mAuth = FirebaseAuth.getInstance();
+
+        // Configure Google Sign In
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
+                    @Override
+                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+                        Toast.makeText(MainActivity.this, R.string.connection_failed, Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+    }
+
+    public boolean checkNetworkConnection() {
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
+    }
+
+    private void signIn() {
+        Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
+        startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    private void firebaseAuthWithGoogle(GoogleSignInAccount acct) {
+        Log.d(TAG, "firebaseAuthWithGoogle:" + acct.getId());
+
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            // Sign in success, update UI with the signed-in user's information
+                            Log.d(TAG, "signInWithCredential:success");
+                            FirebaseUser user = mAuth.getCurrentUser();
+                            updateUI(user);
+                            mSignInButton.setVisibility(View.GONE);
+                        } else {
+                            // If sign in fails, display a message to the user.
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(MainActivity.this, R.string.auth_failed, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
     }
 
     private void enableStrictMode() {
@@ -257,22 +358,22 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showDialogOptionForImage() {
-        final CharSequence[] items = {"Take Photo", "Choose from Library",
-                "Cancel"};
+        final CharSequence[] items = {getString(R.string.take_photo), getString(R.string.choose_from_library),
+                getString(R.string.cancel)};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Add Photo!");
+        builder.setTitle(getString(R.string.add_photo_label));
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
 
-                if (items[item].equals("Take Photo")) {
+                if (items[item].equals(getString(R.string.take_photo))) {
                     cameraIntent();
 
-                } else if (items[item].equals("Choose from Library")) {
+                } else if (items[item].equals(getString(R.string.choose_from_library))) {
                     galleryIntent();
 
-                } else if (items[item].equals("Cancel")) {
+                } else if (items[item].equals(getString(R.string.cancel))) {
                     dialog.dismiss();
                 }
             }
@@ -304,14 +405,26 @@ public class MainActivity extends AppCompatActivity
                 onSelectFromGalleryResult(data);
             }
         }
+        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
+        else if (requestCode == RC_SIGN_IN) {
+            Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+            try {
+                // Google Sign In was successful, authenticate with Firebase
+                GoogleSignInAccount account = task.getResult(ApiException.class);
+                firebaseAuthWithGoogle(account);
+            } catch (ApiException e) {
+                // Google Sign In failed, update UI appropriately
+                Log.w(TAG, "Google sign in failed", e);
+                // ...
+            }
+        }
     }
+
 
     private void onCaptureImageResult(Intent data) {
         Bitmap thumbnail = (Bitmap) data.getExtras().get("data");
 
         Uri imageUri = getImageUri(this, thumbnail);
-//        Glide.with(this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-//                .load(imageUri).into(mProfileImage);
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(user.getUid());
@@ -338,9 +451,6 @@ public class MainActivity extends AppCompatActivity
             }
         }
         Uri imageUri = getImageUri(this, bm);
-//        Glide.with(this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-//                .load(imageUri).into(mProfileImage);
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(user.getUid());
         mUserDb.child("image").setValue(String.valueOf(imageUri));
@@ -350,7 +460,7 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer =  findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
             drawer.closeDrawer(GravityCompat.START);
         } else {
@@ -386,7 +496,7 @@ public class MainActivity extends AppCompatActivity
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT,
-                "Hey check out my app at: https://drive.google.com/open?id=1X3j_B3scMYbmSwAhDQpeIS4zlTBgd9r8");
+                R.string.share_message);
         sendIntent.setType("text/plain");
         startActivity(sendIntent);
     }
@@ -515,4 +625,5 @@ public class MainActivity extends AppCompatActivity
         }
         mTotalAmountByMe.setText(String.valueOf(totalAmt));
     }
+
 }

@@ -29,6 +29,8 @@ import com.amulyakhare.textdrawable.TextDrawable;
 import com.amulyakhare.textdrawable.util.ColorGenerator;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
+import com.example.nnroh.moneycontrol.Notification.DebtReminderIntentService;
+import com.example.nnroh.moneycontrol.Notification.ReminderTasks;
 import com.example.nnroh.moneycontrol.Utils.CountryToPhonePrefix;
 import com.example.nnroh.moneycontrol.Data.Debt;
 import com.example.nnroh.moneycontrol.Data.local.DataManager;
@@ -81,7 +83,6 @@ public class AddPersonActivity extends AppCompatActivity {
     private String mNameIntent;
     private String mNumberIntent;
     private String mImageIntent;
-    private String userChoosenTask;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,7 +104,7 @@ public class AddPersonActivity extends AppCompatActivity {
         }
 
 
-        mibContact = (ImageButton) findViewById(R.id.ib_contacts);
+        mibContact =  findViewById(R.id.ib_contacts);
 
         if (mPermissions) {
             mibContact.setOnClickListener(new View.OnClickListener() {
@@ -128,11 +129,11 @@ public class AddPersonActivity extends AppCompatActivity {
             }
         });
 
-        mNameLayout = (TextInputLayout) findViewById(R.id.til_name);
-        mNumberLayout = (TextInputLayout) findViewById(R.id.til_amount);
-        mAmountLayout = (TextInputLayout) findViewById(R.id.til_phone_number);
+        mNameLayout =  findViewById(R.id.til_name);
+        mNumberLayout =  findViewById(R.id.til_amount);
+        mAmountLayout =  findViewById(R.id.til_phone_number);
 
-        mPhotoView = (ImageView) findViewById(R.id.iv_get_contact_image);
+        mPhotoView =  findViewById(R.id.iv_get_contact_image);
         if (intent.getExtras() != null) {
             if (mImageIntent != null) {
                 Glide.with(this)
@@ -147,18 +148,18 @@ public class AddPersonActivity extends AppCompatActivity {
             }
         }
 
-        mFullNameView = (EditText) findViewById(R.id.et_full_name);
+        mFullNameView =  findViewById(R.id.et_full_name);
         mFullNameView.setText(mNameIntent);
 
-        mNumberView = (EditText) findViewById(R.id.et_phone_number);
+        mNumberView =  findViewById(R.id.et_phone_number);
         mNumberView.setText(mNumberIntent);
 
-        mAmountView = (EditText) findViewById(R.id.et_amount);
-        mCommentView = (EditText) findViewById(R.id.et_comment);
-        mDateCreatedView = (Button) findViewById(R.id.btn_date_created);
-        mDateDueView = (Button) findViewById(R.id.btn_date_due);
+        mAmountView =  findViewById(R.id.et_amount);
+        mCommentView =  findViewById(R.id.et_comment);
+        mDateCreatedView =  findViewById(R.id.btn_date_created);
+        mDateDueView =  findViewById(R.id.btn_date_due);
 
-        mRadioGroup = (RadioGroup) findViewById(R.id.rg_debt_type);
+        mRadioGroup =  findViewById(R.id.rg_debt_type);
         mDebtType = Debt.DEBT_TYPE_OWED;
         mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -243,24 +244,22 @@ public class AddPersonActivity extends AppCompatActivity {
     }
 
     private void showDialogOptionForImage() {
-        final CharSequence[] items = {"Take Photo", "Choose from Library",
-                "Cancel"};
+        final CharSequence[] items = {getString(R.string.take_photo), getString(R.string.choose_from_library),
+                getString(R.string.cancel)};
 
         AlertDialog.Builder builder = new AlertDialog.Builder(AddPersonActivity.this);
-        builder.setTitle("Add Photo!");
+        builder.setTitle(R.string.add_photo_label);
         builder.setItems(items, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
 
-                if (items[item].equals("Take Photo")) {
-                    userChoosenTask = "Take Photo";
+                if (items[item].equals(getString(R.string.take_photo))) {
                     cameraIntent();
 
-                } else if (items[item].equals("Choose from Library")) {
-                    userChoosenTask = "Choose from Library";
+                } else if (items[item].equals(getString(R.string.choose_from_library))) {
                     galleryIntent();
 
-                } else if (items[item].equals("Cancel")) {
+                } else if (items[item].equals(getString(R.string.cancel))) {
                     dialog.dismiss();
                 }
             }
@@ -469,11 +468,13 @@ public class AddPersonActivity extends AppCompatActivity {
         debtValues.put(DebtsEntry.COLUMN_STATUS, Debt.DEBT_STATUS_ACTIVE);
         debtValues.put(DebtsEntry.COLUMN_TYPE, mDebtType);
         getContentResolver().insert(debtUri, debtValues);
+
+
     }
 
     private boolean validateName() {
         if (mFullNameView.getText().toString().isEmpty()) {
-            mNameLayout.setError("This Field is required");
+            mNameLayout.setError(getString(R.string.error_msg_required_field));
             return false;
         } else {
             mNameLayout.setErrorEnabled(false);
@@ -483,7 +484,7 @@ public class AddPersonActivity extends AppCompatActivity {
 
     private boolean validateMoney() {
         if (mAmountView.getText().toString().isEmpty()) {
-            mAmountLayout.setError("This Field is required");
+            mAmountLayout.setError(getString(R.string.error_msg_required_field));
             return false;
         } else {
             mAmountLayout.setErrorEnabled(false);

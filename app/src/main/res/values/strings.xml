@@ -5,8 +5,8 @@
     <string name="title_activity_main">Debt Manager</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
-    <string name="nav_header_title">Create Profile</string>
-    <string name="nav_header_subtitle">+911234567890</string>
+    <string name="nav_header_title">User Name</string>
+    <string name="nav_header_subtitle">user@userhost.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
     <string name="action_call">Call</string>
@@ -148,16 +148,21 @@
     <string name="pref_default_amil_address">yourname@yourhost.com</string>
 
     <string name="debt_notification_title_template">Debt: %1$s</string>
-
-    <!-- TODO: remove this placeholder text -->
-    <string name="debt_notification_placeholder_text_template">You said %1$s and lorem ipsum dolor
-        sit amet, consectetur adipiscing elit. Etiam non enim magna. Morbi dictum, velit vel semper
-        venenatis, magna odio volutpat velit, at ullamcorper nulla lacus sed turpis. Pellentesque
-        vitae metus elit, nec tincidunt tellus. Integer sed nisl sem, ullamcorper ornare lacus. Duis
-        ac mauris sed massa congue volutpat. Donec sed erat sit amet turpis viverra rhoncus sit amet
-        nec magna. Donec lacinia ligula at libero volutpat volutpat nec nec tortor.
-    </string>
+    <string name="debt_reminder_notification_title">Review Record</string>
+    <string name="debt_reminder_notification_body">Open for the new entry or review old one.</string>
+    <string name="main_notification_channel_name">Primary</string>
 
     <string name="action_share">Share</string>
     <string name="action_reply">Reply</string>
+    <string name="share_message">Hey check out my app at: https://drive.google.com/open?id=1X3j_B3scMYbmSwAhDQpeIS4zlTBgd9r8</string>
+    <string name="debt_alert_notification_title">Review Debtor</string>
+    <string name="debt_alert_notification_body">due date is expiring today</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="choose_from_library">Choose from Library</string>
+    <string name="cancel">Cancel</string>
+    <string name="add_photo_label">Add Photo!</string>
+    <string name="connection_failed">Connection Failed</string>
+    <string name="auth_failed">Authentication Failed</string>
+
+
 </resources>
