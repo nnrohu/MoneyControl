@@ -3,7 +3,7 @@ A personal app to store people that owe you money or you owe money to. :notebook
 
 
 
-![alt text](screenshoots/Add_Debt.jpg "Add Debt Screen") ![alt text](screenshoots/Payment_Details.jpg "Payment detail screen")
+![alt text](screenshoots/Add_Debt.jpg "Add Debt Screen" "200 ) ![alt text](screenshoots/Payment_Details.jpg "Payment detail screen")
 
 ![alt text](screenshoots/Debt_List_By_type.jpg "Debt Details By Type screen") ![alt text](screenshoots/Payment_Details_By_Person.jpg "Payment Details By Person screen")
 
