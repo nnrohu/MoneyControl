@@ -1,4 +1,4 @@
-# Debt-Manager
+# Money Control
 A personal app to store people that owe you money or you owe money to. :notebook: :Debt Management:
 
 
