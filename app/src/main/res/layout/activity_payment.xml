@@ -9,7 +9,7 @@
     android:background="@color/cardview_shadow_end_color"
     tools:context=".App.PaymentActivity">
 
-    <android.support.v7.widget.CardView
+    <androidx.cardview.widget.CardView
         card_view:cardCornerRadius="8dp"
         card_view:cardElevation="8dp"
         card_view:cardUseCompatPadding="true"
@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/til_amount_payment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -40,9 +40,9 @@
                     android:inputType="numberDecimal"
                     android:textAppearance="@android:style/TextAppearance.Material.Medium" />
 
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
-            <android.support.design.widget.TextInputLayout
+            <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -61,7 +61,7 @@
                     android:inputType=""
                     android:maxLength="50" />
 
-            </android.support.design.widget.TextInputLayout>
+            </com.google.android.material.textfield.TextInputLayout>
 
             <Button
                 android:id="@+id/btn_date_created_payment"
@@ -90,6 +90,6 @@
                 android:textAppearance="@android:style/TextAppearance.Material.Large" />
 
         </LinearLayout>
-    </android.support.v7.widget.CardView>
+    </androidx.cardview.widget.CardView>
 
 </FrameLayout>

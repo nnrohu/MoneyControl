@@ -2,12 +2,10 @@ package com.example.nnroh.moneycontrol.App;
 
 import android.app.LoaderManager;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
@@ -15,25 +13,39 @@ import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.BatteryManager;
-import android.os.Build;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.NavigationView;
-import android.support.design.widget.Snackbar;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.SignInButton;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
+
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.app.ActionBarDrawerToggle;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
+import de.hdodenhof.circleimageview.CircleImageView;
+
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,23 +61,10 @@ import com.example.nnroh.moneycontrol.Adapter.DebtorRecyclerAdapter;
 import com.example.nnroh.moneycontrol.Adapter.PersonRecyclerAdapter;
 import com.example.nnroh.moneycontrol.BuildConfig;
 import com.example.nnroh.moneycontrol.Data.Debt;
-import com.example.nnroh.moneycontrol.Data.PersonDebt;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.DebtsEntry;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PersonsEntry;
 import com.example.nnroh.moneycontrol.Notification.DebtReminder;
-import com.example.nnroh.moneycontrol.Notification.DebtReminderIntentService;
-import com.example.nnroh.moneycontrol.Notification.ReminderTasks;
 import com.example.nnroh.moneycontrol.R;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.SignInButton;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -77,10 +76,10 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.karan.churi.PermissionManager.PermissionManager;
+import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
@@ -110,7 +109,7 @@ public class MainActivity extends AppCompatActivity
     private boolean mQueryLoadForPersonFinished;
 
     private FirebaseAuth mAuth;
-    private ImageView mProfileImage;
+    private CircleImageView mProfileImage;
 
     public static final int REQUEST_CAMERA = 7;
     public static final int REQUEST_GALLERY = 8;
@@ -131,32 +130,37 @@ public class MainActivity extends AppCompatActivity
 
     }
 
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mGoogleApiClient.disconnect();
+    }
 
     @Override
     public void onStart() {
         super.onStart();
+        mGoogleApiClient.connect();
         // Check if user is signed in (non-null) and update UI accordingly.
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser != null) {
             mSignInButton.setVisibility(View.GONE);
             updateUI(currentUser);
         }
+
     }
 
-    private void updateUI( FirebaseUser currentUser) {
+    private void updateUI(FirebaseUser currentUser) {
         GoogleSignInAccount account = GoogleSignIn.getLastSignedInAccount(this);
-        Uri imageUri = account.getPhotoUrl();
-        if (imageUri == null) {
+        final Uri imageUrl = account.getPhotoUrl();
+        if (imageUrl == null) {
             DatabaseReference mUserDb = FirebaseDatabase.getInstance().getReference("user").child(currentUser.getUid());
 
             mUserDb.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                    String imageVal = (String) dataSnapshot.child("image").getValue();
+                    Uri imageVal = (Uri) dataSnapshot.child("image").getValue();
                     if (imageVal != null) {
-                        Glide.with(getApplicationContext())
-                                .applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-                                .load(imageVal).into(mProfileImage);
+                        Picasso.get().load(imageVal).into(mProfileImage);
                     }
                 }
 
@@ -169,9 +173,8 @@ public class MainActivity extends AppCompatActivity
 
         String name = account.getDisplayName();
         String email = account.getEmail();
-        if (imageUri != null) {
-            Glide.with(this).applyDefaultRequestOptions(RequestOptions.circleCropTransform())
-                    .load(imageUri).into(mProfileImage);
+        if (imageUrl != null) {
+            Picasso.get().load(imageUrl).into(mProfileImage);
         }
         mUserName.setText(name);
         mUserPhone.setText(email);
@@ -226,8 +229,7 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 if (checkNetworkConnection()) {
                     signIn();
-                }
-                else {
+                } else {
                     Snackbar.make(v, getString(R.string.no_internet_connection), Snackbar.LENGTH_LONG).show();
                 }
             }
@@ -254,12 +256,6 @@ public class MainActivity extends AppCompatActivity
                 .build();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, new GoogleApiClient.OnConnectionFailedListener() {
-                    @Override
-                    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                        Toast.makeText(MainActivity.this, R.string.connection_failed, Toast.LENGTH_SHORT).show();
-                    }
-                })
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
 

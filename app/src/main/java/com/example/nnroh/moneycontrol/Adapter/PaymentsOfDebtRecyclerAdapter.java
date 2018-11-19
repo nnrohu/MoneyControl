@@ -2,20 +2,17 @@ package com.example.nnroh.moneycontrol.Adapter;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.example.nnroh.moneycontrol.Data.Payment;
-import com.example.nnroh.moneycontrol.Data.local.DebtsContract;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PaymentsEntry;
 import com.example.nnroh.moneycontrol.R;
 
 import java.text.SimpleDateFormat;
-import java.util.List;
 
 
 public class PaymentsOfDebtRecyclerAdapter extends RecyclerView.Adapter<PaymentsOfDebtRecyclerAdapter.ViewHolder>{

@@ -3,10 +3,10 @@ package com.example.nnroh.moneycontrol.Adapter;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +31,6 @@ public class PersonRecyclerAdapter extends RecyclerView.Adapter<PersonRecyclerAd
     private final LayoutInflater mLayoutInflater;
     private Cursor mCursor;
     private ColorGenerator mGenerator = ColorGenerator.MATERIAL;
-    private int mPersonIdPos;
     private int mPersonImagePos;
     private int mPersonNamePos;
     private int mPersonPhonePos;

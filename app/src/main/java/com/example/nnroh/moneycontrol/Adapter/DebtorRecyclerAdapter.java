@@ -5,9 +5,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,7 +22,6 @@ import com.example.nnroh.moneycontrol.App.PaymentActivity;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.DebtsEntry;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PersonsEntry;
 import com.example.nnroh.moneycontrol.Dialog.PaymentDetailsFragment;
-import com.example.nnroh.moneycontrol.Notification.NotificationUtils;
 import com.example.nnroh.moneycontrol.R;
 
 import java.text.SimpleDateFormat;
@@ -104,7 +103,6 @@ public class DebtorRecyclerAdapter extends RecyclerView.Adapter<DebtorRecyclerAd
         holder.mDebtorNote.setText(debtNote);
         if (Calendar.getInstance().getTimeInMillis() > debtDueDate) {
             holder.mDebtorDueDate.setTextColor(Color.RED);
-            NotificationUtils.remindUserForReview(mContext);
         }
         holder.mDebtorDueDate.setText(mContext.getString(R.string.due_date_label) + getDate(debtDueDate));
 

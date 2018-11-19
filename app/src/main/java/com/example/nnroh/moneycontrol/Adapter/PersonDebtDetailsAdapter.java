@@ -1,30 +1,21 @@
 package com.example.nnroh.moneycontrol.Adapter;
 
 import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.RecyclerView;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.nnroh.moneycontrol.App.PaymentActivity;
 import com.example.nnroh.moneycontrol.Data.Debt;
-import com.example.nnroh.moneycontrol.Data.local.DataManager;
-import com.example.nnroh.moneycontrol.Data.local.DebtsContract;
 import com.example.nnroh.moneycontrol.Data.local.DebtsContract.DebtsEntry;
-import com.example.nnroh.moneycontrol.Data.local.DebtsContract.PaymentsEntry;
 import com.example.nnroh.moneycontrol.Data.local.DebtsDbHelper;
 import com.example.nnroh.moneycontrol.Dialog.PaymentDetailsFragment;
 import com.example.nnroh.moneycontrol.R;

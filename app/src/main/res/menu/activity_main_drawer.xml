@@ -7,17 +7,17 @@
     <group android:checkableBehavior="single">
         <item
             android:id="@+id/nav_person"
-            android:icon="@drawable/ic_menu_camera"
+            android:icon="@drawable/ic_person"
             android:title="@string/nav_person_tab" />
         <item
             android:id="@+id/nav_owed_to_me"
-            android:icon="@drawable/ic_menu_gallery"
+            android:icon="@drawable/ic_attach_money_black_24dp"
             android:title="@string/nav_owed_to_me_tab"
             app:actionLayout="@layout/menu_counter"/>
 
         <item
             android:id="@+id/nav_owed_by_me"
-            android:icon="@drawable/ic_menu_slideshow"
+            android:icon="@drawable/ic_attach_money_black_24dp"
             android:title="@string/nav_owed_by_me_tab"
             app:actionLayout="@layout/menu_counter_to"/>
     </group>

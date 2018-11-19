@@ -156,7 +156,7 @@
     <string name="action_reply">Reply</string>
     <string name="share_message">Hey check out my app at: https://drive.google.com/open?id=1X3j_B3scMYbmSwAhDQpeIS4zlTBgd9r8</string>
     <string name="debt_alert_notification_title">Review Debtor</string>
-    <string name="debt_alert_notification_body">due date is expiring today</string>
+    <string name="debt_alert_notification_body">due date is expired</string>
     <string name="take_photo">Take Photo</string>
     <string name="choose_from_library">Choose from Library</string>
     <string name="cancel">Cancel</string>
