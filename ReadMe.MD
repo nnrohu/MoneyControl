@@ -1,15 +1,15 @@
-# Debt-Manager
+# Money Control
 A personal app to store people that owe you money or you owe money to. :notebook: :Debt Management:
 
 
 
-![alt text](screenshots/Add_Debt.jpg "Add Debt Screen") ![alt text](screenshots/Payment_Details.jpg.png "Payment detail screen")
+![alt text](screenshoots/Add_Debt.jpg "Add Debt Screen") ![alt text](screenshoots/Payment_Details.jpg.png "Payment detail screen")
 
-![alt text](screenshots/Debt_List_By_type.jpg "Debt Details By Type screen") ![alt text](screenshots/Payment_Details_By_Person.jpg "Payment Details By Person screen")
+![alt text](screenshoots/Debt_List_By_type.jpg "Debt Details By Type screen") ![alt text](screenshoots/Payment_Details_By_Person.jpg "Payment Details By Person screen")
 
-![alt text](screenshots/Person_Details_With_debt.jpg "Person Details With debt screen") ![alt text](screenshots/Nav_View.jpg "Navigation screen")
+![alt text](screenshoots/Person_Details_With_debt.jpg "Person Details With debt screen") ![alt text](screenshoots/Nav_View.jpg "Navigation screen")
 
-![alt text](screenshots/Home.jpg "Home screen")
+![alt text](screenshoots/Home.jpg "Home screen")
 
 
 ##### libraries:
