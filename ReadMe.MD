@@ -12,7 +12,7 @@ A personal app to store people that owe you money or you owe money to. :notebook
 ![alt text](screenshoots/Home.jpg "Home screen")
 
 
-App Download link:https://drive.google.com/open?id=1zBKOr1iFw2g0Tjv_1yU2WGe-HZNeII9n
+App Download link:https://drive.google.com/open?id=1qGaRmjbw27ebaN9cN_2PQfmipjutTCkm
 
 ##### libraries:
 
