@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     defaultConfig {
         applicationId "com.example.nnroh.moneycontrol"
         minSdkVersion 23
@@ -16,30 +16,35 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+    buildToolsVersion = '29.0.3'
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'androidx.appcompat:appcompat:1.0.0'
+    implementation 'androidx.appcompat:appcompat:1.1.0'
 
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha01'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-alpha2'
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
-    implementation 'com.google.firebase:firebase-auth:16.0.5'
-    implementation 'com.google.android.gms:play-services-auth:16.0.1'
-    implementation 'com.google.firebase:firebase-core:16.0.4'
-    implementation 'com.google.firebase:firebase-database:16.0.4'
+    implementation 'com.google.android.material:material:1.2.0-alpha06'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.0-beta4'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
+    implementation 'com.google.firebase:firebase-auth:19.3.1'
+    implementation 'com.google.android.gms:play-services-auth:18.0.0'
+    implementation 'com.google.firebase:firebase-core:17.4.0'
+    implementation 'com.google.firebase:firebase-database:19.3.0'
     implementation 'com.firebaseui:firebase-ui-auth:4.1.0'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'androidx.test:runner:1.1.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.1.0'
-    implementation 'com.google.android.material:material:1.1.0-alpha01'
+    testImplementation 'junit:junit:4.13'
+    androidTestImplementation 'androidx.test:runner:1.2.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation 'com.google.android.material:material:1.2.0-alpha06'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'de.hdodenhof:circleimageview:2.2.0'
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
     implementation 'com.squareup.picasso:picasso:2.71828'
-    implementation 'com.github.bumptech.glide:glide:4.8.0'
-    annotationProcessor 'com.github.bumptech.glide:compiler:4.8.0'
+    implementation 'com.github.bumptech.glide:glide:4.11.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
     implementation 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     implementation 'com.github.karanchuri:PermissionManager:0.1.0'
     //contacts initial letter image

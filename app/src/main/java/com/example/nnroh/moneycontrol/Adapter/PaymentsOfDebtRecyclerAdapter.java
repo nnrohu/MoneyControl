@@ -40,6 +40,9 @@ public class PaymentsOfDebtRecyclerAdapter extends RecyclerView.Adapter<Payments
     }
 
     private void populateColumnPosition() {
+        if (mCursor == null)
+            return;
+
         mPaymentAmountPos = mCursor.getColumnIndex(PaymentsEntry.COLUMN_AMOUNT);
         mPaymentNotePos = mCursor.getColumnIndex(PaymentsEntry.COLUMN_NOTE);
         mPaymentCreateDatePos = mCursor.getColumnIndex(PaymentsEntry.COLUMN_DATE_ENTERED);
